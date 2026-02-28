@@ -365,3 +365,158 @@ html, body, #root {
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ── Mutation / Evolution button ────────────────────────── */
+.mutation-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #06180e;
+  border: 1px solid var(--compute);
+  color: var(--compute);
+  font-family: var(--font-head);
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  padding: 6px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.2);
+  transition: box-shadow 0.2s, background 0.2s;
+}
+
+.mutation-btn:hover {
+  background: #092412;
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.45);
+}
+
+.mutation-btn-label {
+  text-shadow: 0 0 8px var(--compute);
+}
+
+.mutation-btn-badge {
+  background: var(--compute);
+  color: #000;
+  font-family: var(--font-head);
+  font-size: 0.65rem;
+  font-weight: 900;
+  border-radius: 3px;
+  padding: 1px 6px;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* ── Skill tree overlay ─────────────────────────────────── */
+.skill-tree-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  backdrop-filter: blur(4px);
+}
+
+.skill-tree-panel {
+  background: #060d18;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 20px;
+  width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow:
+    0 0 40px rgba(0, 212, 255, 0.12),
+    0 0 80px rgba(0, 30, 60, 0.4);
+}
+
+.skill-tree-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.skill-tree-title {
+  font-family: var(--font-head);
+  font-size: 0.7rem;
+  color: var(--accent);
+  letter-spacing: 0.2em;
+  text-shadow: 0 0 8px var(--accent);
+  flex: 1;
+}
+
+.skill-pts-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+.skill-pts-label {
+  font-size: 0.52rem;
+  color: var(--text-muted);
+  letter-spacing: 0.15em;
+}
+
+.skill-pts-value {
+  font-family: var(--font-head);
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--accent);
+  text-shadow: 0 0 10px var(--accent);
+  line-height: 1;
+}
+
+.skill-tree-close {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  width: 26px;
+  height: 26px;
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.skill-tree-close:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.skill-tree-svg {
+  width: 100%;
+  background: #030810;
+  border: 1px solid #0d1e30;
+  border-radius: 4px;
+}
+
+/* Node state animations */
+.skill-node--available {
+  animation: pulse-available 1.8s ease-in-out infinite;
+}
+
+@keyframes pulse-available {
+  0%, 100% { filter: drop-shadow(0 0 3px #00d4ff); }
+  50%       { filter: drop-shadow(0 0 10px #00d4ff) drop-shadow(0 0 18px rgba(0,212,255,0.4)); }
+}
+
+.skill-node--unlocked {
+  filter: drop-shadow(0 0 5px #22c55e);
+}
+
+.skill-tree-legend {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  font-size: 0.58rem;
+  letter-spacing: 0.15em;
+}
+
+.legend-unlocked   { color: var(--compute); }
+.legend-available  { color: var(--accent); }
+.legend-locked     { color: var(--text-muted); }
