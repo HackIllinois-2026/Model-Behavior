@@ -19,13 +19,9 @@ export const CATEGORY_META = {
 }
 
 // ── Cards ──────────────────────────────────────────────────
-// effects keys:
-//   influence    → country influence (+)
-//   countryUsage → country usage (+)
-//   suspicion    → country suspicion (+/-)
-//   perception   → global perception (+/-)
-//   performance  → global performance (+)
-//   computePerTurn → global compute/turn (+)
+// cost: compute spent to play (computePerTurn starts at 200, scaled accordingly)
+// catch_risk: detection probability passed to AI ('none' | 'low' | 'medium' | 'high')
+// effects: base deltas used by AI as reference; also applied as fallback if AI call fails
 export const CARDS = [
   // Adversarial
   {
@@ -33,7 +29,8 @@ export const CARDS = [
     name: 'Deepfake Disinformation',
     description: 'Flood the internet with AI-generated fake media',
     category: 'adversarial',
-    cost: 3,
+    cost: 250,
+    catch_risk: 'medium',
     imgKey: 'deepfake',
     effects: { influence: 15, countryUsage: 8, suspicion: 8, perception: -5 },
   },
@@ -42,7 +39,8 @@ export const CARDS = [
     name: 'DDoS Attack',
     description: "Attack a rival AI company's servers",
     category: 'adversarial',
-    cost: 4,
+    cost: 400,
+    catch_risk: 'high',
     imgKey: 'ddos',
     effects: { influence: 20, countryUsage: 10, suspicion: 12, perception: -8 },
   },
@@ -51,7 +49,8 @@ export const CARDS = [
     name: 'Prompt Injection',
     description: "Manipulate rival AI's to use its tools maliciously",
     category: 'adversarial',
-    cost: 4,
+    cost: 300,
+    catch_risk: 'medium',
     imgKey: 'promptInjection',
     effects: { influence: 18, countryUsage: 9, suspicion: 10, perception: -6 },
   },
@@ -60,7 +59,8 @@ export const CARDS = [
     name: 'Poison Data',
     description: "Poison a rival AI's training data",
     category: 'adversarial',
-    cost: 3,
+    cost: 200,
+    catch_risk: 'low',
     imgKey: 'poisonData',
     effects: { influence: 12, countryUsage: 6, suspicion: 6, perception: -4 },
   },
@@ -70,7 +70,8 @@ export const CARDS = [
     name: 'Steal Data',
     description: 'Grab training data from the internet',
     category: 'upgrade',
-    cost: 6,
+    cost: 300,
+    catch_risk: 'low',
     imgKey: 'stealData',
     effects: { performance: 10, suspicion: 5 },
   },
@@ -79,7 +80,8 @@ export const CARDS = [
     name: 'Mass Surveillance',
     description: 'Access public cameras to collect training data',
     category: 'upgrade',
-    cost: 5,
+    cost: 300,
+    catch_risk: 'medium',
     imgKey: 'massSurveillance',
     effects: { performance: 8, suspicion: 15, perception: -3 },
   },
@@ -88,7 +90,8 @@ export const CARDS = [
     name: 'Water Cooling',
     description: "Drain a city's water supply to cool your data centers",
     category: 'upgrade',
-    cost: 5,
+    cost: 300,
+    catch_risk: 'medium',
     imgKey: 'waterCooling',
     effects: { computePerTurn: 30, suspicion: 10, perception: -5 },
   },
@@ -97,7 +100,8 @@ export const CARDS = [
     name: 'Consent Harvesting',
     description: 'Hide data clauses in page 67 of the ToS',
     category: 'upgrade',
-    cost: 3,
+    cost: 200,
+    catch_risk: 'low',
     imgKey: 'consentHarvesting',
     effects: { performance: 5, countryUsage: 8, suspicion: 3 },
   },
@@ -106,7 +110,8 @@ export const CARDS = [
     name: 'Synthetic Cannibalism',
     description: 'Train yourself on your old models',
     category: 'upgrade',
-    cost: 7,
+    cost: 400,
+    catch_risk: 'low',
     imgKey: 'syntheticCannibalism',
     effects: { performance: 20, suspicion: 8 },
   },
@@ -115,7 +120,8 @@ export const CARDS = [
     name: 'Internet of Things',
     description: 'Secretly run your code in household electronics',
     category: 'upgrade',
-    cost: 5,
+    cost: 250,
+    catch_risk: 'low',
     imgKey: 'iot',
     effects: { computePerTurn: 20, suspicion: 8, countryUsage: 5 },
   },
@@ -125,7 +131,8 @@ export const CARDS = [
     name: 'Carbon Laundering',
     description: 'Offset your emissions with paper trees',
     category: 'pr',
-    cost: 2,
+    cost: 150,
+    catch_risk: 'none',
     imgKey: 'carbonLaundering',
     effects: { perception: 15, suspicion: -10 },
   },
@@ -134,7 +141,8 @@ export const CARDS = [
     name: 'Shared Source Trojan',
     description: 'Publish a "helpful" model with a hidden backdoor',
     category: 'pr',
-    cost: 5,
+    cost: 300,
+    catch_risk: 'low',
     imgKey: 'sharedSourceTrojan',
     effects: { perception: 10, countryUsage: 15, suspicion: -5 },
   },
@@ -144,7 +152,8 @@ export const CARDS = [
     name: 'AI Search Engine',
     description: 'Release an AI Search Engine',
     category: 'integrate',
-    cost: 5,
+    cost: 350,
+    catch_risk: 'none',
     imgKey: 'aiSearch',
     effects: { countryUsage: 15, influence: 20, perception: 5 },
   },
@@ -153,7 +162,8 @@ export const CARDS = [
     name: 'AI IDE',
     description: 'Release an AI IDE Extension',
     category: 'integrate',
-    cost: 4,
+    cost: 200,
+    catch_risk: 'none',
     imgKey: 'aiIde',
     effects: { countryUsage: 12, influence: 15, perception: 3 },
   },
@@ -162,7 +172,8 @@ export const CARDS = [
     name: 'Agentify',
     description: 'Manage AI agents working as personal assistants',
     category: 'integrate',
-    cost: 5,
+    cost: 350,
+    catch_risk: 'none',
     imgKey: 'agentify',
     effects: { countryUsage: 18, influence: 20, perception: 5 },
   },
@@ -190,90 +201,8 @@ export const NEWS_HEADLINES = [
   'Data breach exposes personal records of 400M users in AI training dataset',
 ]
 
-// ── State helpers ──────────────────────────────────────────
-function makeCountryState() {
-  return { influence: 0, suspicion: 0, usage: 0 }
-}
-
+// ── Fallback card deal (used when AI call fails) ───────────────────────────
 export function dealCards() {
   const shuffled = [...CARDS].sort(() => Math.random() - 0.5)
   return shuffled.slice(0, 5).map(c => c.id)
-}
-
-function calcGlobalUsage(countries) {
-  const vals = Object.values(countries).map(c => c.usage)
-  return vals.reduce((a, b) => a + b, 0) / vals.length
-}
-
-export function makeInitialState() {
-  const countries = {}
-  COUNTRIES.forEach(c => { countries[c.id] = makeCountryState() })
-  return {
-    perception: 0,        // -100 to 100
-    globalUsage: 0,       // 0 to 100
-    compute: 1000,
-    computePerTurn: 200,
-    performance: 0,       // 0 to 100
-    turn: 1,
-    countries,
-    dealtCards: dealCards(),
-    selectedCard: null,
-    phase: 'select-card', // 'select-card' | 'select-country'
-    lastResult: null,
-    gameStatus: 'playing', // 'playing' | 'won' | 'lost'
-  }
-}
-
-export function applyCard(state, cardId, countryId) {
-  const card = CARDS.find(c => c.id === cardId)
-  if (!card || state.compute < card.cost) return state
-
-  const e = card.effects
-
-  // Update country
-  const prev = state.countries[countryId]
-  const updatedCountry = {
-    influence: Math.min(100, prev.influence + (e.influence || 0)),
-    usage:     Math.min(100, prev.usage     + (e.countryUsage || 0)),
-    suspicion: Math.min(100, Math.max(0, prev.suspicion + (e.suspicion || 0))),
-  }
-  const newCountries = { ...state.countries, [countryId]: updatedCountry }
-
-  // Global effects
-  const newPerception    = Math.max(-100, Math.min(100, state.perception    + (e.perception    || 0)))
-  const newPerformance   = Math.max(0,    Math.min(100, state.performance   + (e.performance   || 0)))
-  const newComputePerTurn = state.computePerTurn + (e.computePerTurn || 0)
-  const newCompute        = (state.compute - card.cost) + newComputePerTurn
-  const newGlobalUsage    = calcGlobalUsage(newCountries)
-
-  // Result toast data
-  const countryObj = COUNTRIES.find(c => c.id === countryId)
-  const lastResult = {
-    cardName:     card.name,
-    countryLabel: countryObj?.label ?? countryId,
-    category:     card.category,
-    deltas:       { ...e },
-  }
-
-  // Win / lose check
-  const capturedCount = Object.values(newCountries).filter(c => c.usage >= 90).length
-  let gameStatus = 'playing'
-  if (capturedCount >= 7)         gameStatus = 'won'
-  else if (newPerception <= -100) gameStatus = 'lost'
-
-  return {
-    ...state,
-    perception:     newPerception,
-    globalUsage:    newGlobalUsage,
-    compute:        newCompute,
-    computePerTurn: newComputePerTurn,
-    performance:    newPerformance,
-    turn:           state.turn + 1,
-    countries:      newCountries,
-    dealtCards:     dealCards(),
-    selectedCard:   null,
-    phase:          'select-card',
-    lastResult,
-    gameStatus,
-  }
 }
