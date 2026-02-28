@@ -1,18 +1,19 @@
-import ddos from '../resources/cards/3694f7dc-03.png'
-import poisonData from '../resources/cards/3694f7dc-04.png'
-import promptInjection from '../resources/cards/3694f7dc-05.png'
-import deepfake from '../resources/cards/3694f7dc-06.png'
-import stealData from '../resources/cards/3694f7dc-08.png'
-import massSurveillance from '../resources/cards/3694f7dc-09.png'
-import waterCooling from '../resources/cards/3694f7dc-10.png'
-import consentHarvesting from '../resources/cards/3694f7dc-11.png'
-import syntheticCannibalism from '../resources/cards/3694f7dc-12.png'
-import iot from '../resources/cards/3694f7dc-13.png'
-import carbonLaundering from '../resources/cards/3694f7dc-15.png'
-import sharedSourceTrojan from '../resources/cards/3694f7dc-16.png'
-import aiSearch from '../resources/cards/3694f7dc-18.png'
-import aiIde from '../resources/cards/3694f7dc-19.png'
-import agentify from '../resources/cards/3694f7dc-20.png'
+import ddos               from '../resources/cards/DDoSAttack.png'
+import poisonData         from '../resources/cards/PoisonData.png'
+import promptInjection    from '../resources/cards/PromptInjection.png'
+import deepfake           from '../resources/cards/DeepfakeDisinformation.png'
+import stealData          from '../resources/cards/StealData.png'
+import massSurveillance   from '../resources/cards/MassSurveillance.png'
+import waterCooling       from '../resources/cards/WaterCooling.png'
+import consentHarvesting  from '../resources/cards/ConsentHarvesting.png'
+import syntheticCannibalism from '../resources/cards/SyntheticCannibalism.png'
+import iot                from '../resources/cards/InternetOfThings.png'
+import addDataCenters     from '../resources/cards/AddDataCenters.png'
+import carbonControl      from '../resources/cards/CarbonControl.png'
+import sharedSourceTrojan from '../resources/cards/SharedSourceTrojan.png'
+import aiSearch           from '../resources/cards/AISearchEngine.png'
+import aiIde              from '../resources/cards/AIIDE.png'
+import agentify           from '../resources/cards/Agentify.png'
 
 const CARD_IMAGES = {
   ddos,
@@ -25,7 +26,8 @@ const CARD_IMAGES = {
   consentHarvesting,
   syntheticCannibalism,
   iot,
-  carbonLaundering,
+  addDataCenters,
+  carbonControl,
   sharedSourceTrojan,
   aiSearch,
   aiIde,
