@@ -18,23 +18,35 @@ function CardItem({ card, isSelected, canAfford, onClick, onRightClick }) {
         className="card-img"
         draggable={false}
       />
-      <div className="card-category-tag" style={{ background: catColor }}>
-        {CATEGORY_META[card.category]?.label}
-      </div>
     </div>
   )
 }
 
 export default function CardHand({ dealtCards, selectedCard, compute, phase, onCardClick, onCardRightClick }) {
   const isTargeting = phase === 'select-country'
+  const selectedCardObj = selectedCard ? CARDS.find(c => c.id === selectedCard) : null
 
   return (
     <div className="card-hand-section">
-      <div className={`card-hand-label${isTargeting ? ' targeting' : ''}`}>
-        {isTargeting
-          ? '▶  SELECT A REGION ON THE MAP TO TARGET'
-          : 'SELECT A CARD  ·  RIGHT-CLICK FOR DETAILS'}
+      {/* Info panel to the left of the cards */}
+      <div className="card-info-panel">
+        {isTargeting && selectedCardObj ? (
+          <>
+            <div className="ci-targeting-label">▶ SELECT REGION</div>
+            <div className="ci-card-name">{selectedCardObj.name}</div>
+            <div className="ci-card-cost">{selectedCardObj.cost} compute</div>
+            <div className="ci-card-desc">{selectedCardObj.description}</div>
+          </>
+        ) : (
+          <>
+            <div className="ci-idle-title">YOUR HAND</div>
+            <div className="ci-hint">Left-click to play a card</div>
+            <div className="ci-hint">Right-click to inspect</div>
+          </>
+        )}
       </div>
+
+      {/* Card hand */}
       <div className="card-hand">
         {dealtCards.map(cardId => {
           const card = CARDS.find(c => c.id === cardId)

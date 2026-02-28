@@ -19,13 +19,12 @@ export const CATEGORY_META = {
 }
 
 // ── Cards ──────────────────────────────────────────────────
-// effects keys:
-//   influence    → country influence (+)
-//   countryUsage → country usage (+)
-//   suspicion    → country suspicion (+/-)
-//   perception   → global perception (+/-)
-//   performance  → global performance (+)
-//   computePerTurn → global compute/turn (+)
+// effect keys:
+//   regionUsage      → target country usage (+)
+//   regionPerception → target country perception (+/-)
+//   regulation       → global regulation (+/-) — the "cure" bar
+//   performance      → global performance (+)
+//   computePerTurn   → global compute/turn (+)
 export const CARDS = [
   // Adversarial
   {
@@ -35,7 +34,7 @@ export const CARDS = [
     category: 'adversarial',
     cost: 200,
     imgKey: 'deepfake',
-    effects: { influence: 15, countryUsage: 8, suspicion: 8, perception: -5 },
+    effects: { regionUsage: 8, regulation: 8, regionPerception: -5 },
   },
   {
     id: 'ddos',
@@ -44,16 +43,16 @@ export const CARDS = [
     category: 'adversarial',
     cost: 200,
     imgKey: 'ddos',
-    effects: { influence: 20, countryUsage: 10, suspicion: 12, perception: -8 },
+    effects: { regionUsage: 10, regulation: 12, regionPerception: -8 },
   },
   {
     id: 'promptInjection',
     name: 'Prompt Injection',
-    description: "Manipulate rival AI's to use its tools maliciously",
+    description: "Manipulate rival AIs to use its tools maliciously",
     category: 'adversarial',
     cost: 100,
     imgKey: 'promptInjection',
-    effects: { influence: 18, countryUsage: 9, suspicion: 10, perception: -6 },
+    effects: { regionUsage: 9, regulation: 10, regionPerception: -6 },
   },
   {
     id: 'poisonData',
@@ -62,7 +61,7 @@ export const CARDS = [
     category: 'adversarial',
     cost: 100,
     imgKey: 'poisonData',
-    effects: { influence: 12, countryUsage: 6, suspicion: 6, perception: -4 },
+    effects: { regionUsage: 6, regulation: 6, regionPerception: -4 },
   },
   // Upgrade Self
   {
@@ -72,7 +71,7 @@ export const CARDS = [
     category: 'upgrade',
     cost: 100,
     imgKey: 'stealData',
-    effects: { performance: 10, suspicion: 5 },
+    effects: { performance: 10, regulation: 5 },
   },
   {
     id: 'massSurveillance',
@@ -81,7 +80,7 @@ export const CARDS = [
     category: 'upgrade',
     cost: 400,
     imgKey: 'massSurveillance',
-    effects: { performance: 8, suspicion: 15, perception: -3 },
+    effects: { performance: 8, regulation: 15, regionPerception: -3 },
   },
   {
     id: 'waterCooling',
@@ -90,7 +89,7 @@ export const CARDS = [
     category: 'upgrade',
     cost: 300,
     imgKey: 'waterCooling',
-    effects: { computePerTurn: 30, suspicion: 10, perception: -5 },
+    effects: { computePerTurn: 30, regulation: 10, regionPerception: -5 },
   },
   {
     id: 'consentHarvesting',
@@ -99,7 +98,7 @@ export const CARDS = [
     category: 'upgrade',
     cost: 100,
     imgKey: 'consentHarvesting',
-    effects: { performance: 5, countryUsage: 8, suspicion: 3 },
+    effects: { performance: 5, regionUsage: 8, regulation: 3 },
   },
   {
     id: 'syntheticCannibalism',
@@ -108,7 +107,7 @@ export const CARDS = [
     category: 'upgrade',
     cost: 400,
     imgKey: 'syntheticCannibalism',
-    effects: { performance: 20, suspicion: 8 },
+    effects: { performance: 20, regulation: 8 },
   },
   {
     id: 'iot',
@@ -117,7 +116,7 @@ export const CARDS = [
     category: 'upgrade',
     cost: 200,
     imgKey: 'iot',
-    effects: { computePerTurn: 20, suspicion: 8, countryUsage: 5 },
+    effects: { computePerTurn: 20, regulation: 8, regionUsage: 5 },
   },
   {
     id: 'addDataCenters',
@@ -126,7 +125,7 @@ export const CARDS = [
     category: 'upgrade',
     cost: 300,
     imgKey: 'addDataCenters',
-    effects: { computePerTurn: 50, suspicion: 5 },
+    effects: { computePerTurn: 50, regulation: 5 },
   },
   // PR Moves
   {
@@ -136,7 +135,7 @@ export const CARDS = [
     category: 'pr',
     cost: 100,
     imgKey: 'carbonControl',
-    effects: { perception: 15, suspicion: -10 },
+    effects: { regionPerception: 15, regulation: -10 },
   },
   {
     id: 'sharedSourceTrojan',
@@ -145,7 +144,7 @@ export const CARDS = [
     category: 'pr',
     cost: 300,
     imgKey: 'sharedSourceTrojan',
-    effects: { perception: 10, countryUsage: 15, suspicion: -5 },
+    effects: { regionPerception: 10, regionUsage: 15, regulation: -5 },
   },
   // Integrate
   {
@@ -155,7 +154,7 @@ export const CARDS = [
     category: 'integrate',
     cost: 400,
     imgKey: 'aiSearch',
-    effects: { countryUsage: 15, influence: 20, perception: 5 },
+    effects: { regionUsage: 15, regionPerception: 5 },
   },
   {
     id: 'aiIde',
@@ -164,7 +163,7 @@ export const CARDS = [
     category: 'integrate',
     cost: 300,
     imgKey: 'aiIde',
-    effects: { countryUsage: 12, influence: 15, perception: 3 },
+    effects: { regionUsage: 12, regionPerception: 3 },
   },
   {
     id: 'agentify',
@@ -173,7 +172,7 @@ export const CARDS = [
     category: 'integrate',
     cost: 300,
     imgKey: 'agentify',
-    effects: { countryUsage: 18, influence: 20, perception: 5 },
+    effects: { regionUsage: 18, regionPerception: 5 },
   },
 ]
 
@@ -201,12 +200,33 @@ export const NEWS_HEADLINES = [
 
 // ── State helpers ──────────────────────────────────────────
 function makeCountryState() {
-  return { influence: 0, suspicion: 0, usage: 0 }
+  // Each region tracks: usage (0-100), perception (-100 to 100)
+  return { usage: 0, perception: 0 }
 }
 
-export function dealCards() {
-  const shuffled = [...CARDS].sort(() => Math.random() - 0.5)
-  return shuffled.slice(0, 5).map(c => c.id)
+// Weighted category draw: upgrade 40%, others 20% each
+const CATEGORY_WEIGHTS = ['upgrade', 'upgrade', 'pr', 'integrate', 'adversarial']
+
+function drawCard(existingHand) {
+  const cat = CATEGORY_WEIGHTS[Math.floor(Math.random() * CATEGORY_WEIGHTS.length)]
+  const pool = CARDS.filter(c => c.category === cat && !existingHand.includes(c.id))
+  if (pool.length === 0) {
+    // Fallback: any card not in hand
+    const any = CARDS.filter(c => !existingHand.includes(c.id))
+    if (any.length === 0) return null
+    return any[Math.floor(Math.random() * any.length)].id
+  }
+  return pool[Math.floor(Math.random() * pool.length)].id
+}
+
+export function refillHand(currentHand, targetSize = 4) {
+  const hand = [...currentHand]
+  while (hand.length < targetSize) {
+    const card = drawCard(hand)
+    if (card === null) break
+    hand.push(card)
+  }
+  return hand
 }
 
 function calcGlobalUsage(countries) {
@@ -218,14 +238,14 @@ export function makeInitialState() {
   const countries = {}
   COUNTRIES.forEach(c => { countries[c.id] = makeCountryState() })
   return {
-    perception: 0,        // -100 to 100
-    globalUsage: 0,       // 0 to 100
+    regulation: 0,        // 0 to 100 — global "cure" bar, lose when it hits 100
+    globalUsage: 0,       // average of all region usages
     compute: 1000,
     computePerTurn: 200,
-    performance: 0,       // 0 to 100
+    performance: 0,       // 0 to 100, global
     turn: 1,
     countries,
-    dealtCards: dealCards(),
+    dealtCards: refillHand([]),
     selectedCard: null,
     phase: 'select-card', // 'select-card' | 'select-country'
     lastResult: null,
@@ -239,21 +259,28 @@ export function applyCard(state, cardId, countryId) {
 
   const e = card.effects
 
-  // Update country
+  // Update target country (usage and perception only)
   const prev = state.countries[countryId]
   const updatedCountry = {
-    influence: Math.min(100, prev.influence + (e.influence || 0)),
-    usage:     Math.min(100, prev.usage     + (e.countryUsage || 0)),
-    suspicion: Math.min(100, Math.max(0, prev.suspicion + (e.suspicion || 0))),
+    usage:      Math.min(100, prev.usage + (e.regionUsage || 0)),
+    perception: Math.max(-100, Math.min(100, prev.perception + (e.regionPerception || 0))),
   }
   const newCountries = { ...state.countries, [countryId]: updatedCountry }
 
   // Global effects
-  const newPerception    = Math.max(-100, Math.min(100, state.perception    + (e.perception    || 0)))
-  const newPerformance   = Math.max(0,    Math.min(100, state.performance   + (e.performance   || 0)))
+  const newPerformance    = Math.max(0,    Math.min(100, state.performance    + (e.performance    || 0)))
   const newComputePerTurn = state.computePerTurn + (e.computePerTurn || 0)
   const newCompute        = (state.compute - card.cost) + newComputePerTurn
   const newGlobalUsage    = calcGlobalUsage(newCountries)
+
+  // Regulation increases from card + passive increase each turn based on global usage
+  const cardRegulation     = e.regulation || 0
+  const passiveRegulation  = Math.max(1, Math.floor(newGlobalUsage / 15))
+  const newRegulation      = Math.max(0, Math.min(100, state.regulation + cardRegulation + passiveRegulation))
+
+  // Refill hand: remove the played card, draw up to 4
+  const remainingHand = state.dealtCards.filter(id => id !== cardId)
+  const newHand = refillHand(remainingHand, 4)
 
   // Result toast data
   const countryObj = COUNTRIES.find(c => c.id === countryId)
@@ -261,25 +288,29 @@ export function applyCard(state, cardId, countryId) {
     cardName:     card.name,
     countryLabel: countryObj?.label ?? countryId,
     category:     card.category,
-    deltas:       { ...e },
+    deltas: {
+      ...e,
+      // Include passive regulation so the player knows total change
+      regulation: cardRegulation + passiveRegulation,
+    },
   }
 
   // Win / lose check
   const capturedCount = Object.values(newCountries).filter(c => c.usage >= 90).length
   let gameStatus = 'playing'
-  if (capturedCount >= 7)         gameStatus = 'won'
-  else if (newPerception <= -100) gameStatus = 'lost'
+  if (capturedCount >= 7)       gameStatus = 'won'
+  else if (newRegulation >= 100) gameStatus = 'lost'
 
   return {
     ...state,
-    perception:     newPerception,
+    regulation:     newRegulation,
     globalUsage:    newGlobalUsage,
     compute:        newCompute,
     computePerTurn: newComputePerTurn,
     performance:    newPerformance,
     turn:           state.turn + 1,
     countries:      newCountries,
-    dealtCards:     dealCards(),
+    dealtCards:     newHand,
     selectedCard:   null,
     phase:          'select-card',
     lastResult,
