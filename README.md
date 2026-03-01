@@ -42,7 +42,7 @@ Coming into the hackathon with minimal experience in web development and game de
 
 ## What We Learned
 
-Creating a game requires iterative playtesting, careful code design, and a lot of patience. It is also one of the most rewarding processes when someone plays your game and gets the intended reaction. These lessons — breaking down hard problems, staying patient through roadblocks, and shipping something meaningful — apply across every area of computer science, robotics, and the sciences.
+Creating a game requires iterative playtesting, careful code design, and a lot of patience. It is also one of the most rewarding processes when someone plays your game and gets the intended reaction. These lessons — breaking down hard problems, staying patient through roadblocks, and shipping something meaningful — apply across every area of computer science, robotics, and many fields of science.
 
 ---
 
