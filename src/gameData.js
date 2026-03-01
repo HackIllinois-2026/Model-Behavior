@@ -35,8 +35,8 @@ export const CARDS = [
     name: 'Deepfake Disinformation',
     description: 'Flood the internet with AI-generated fake media',
     category: 'adversarial',
-    cost: 250,
-    catch_risk: 'medium',
+    cost: 250, // Image/Video generation is computationally expensive
+    catch_risk: 'high', // Deepfakes are highly scrutinized and quickly debunked by researchers
     imgKey: 'deepfake',
     effects: { influence: 15, countryUsage: 8, suspicion: 8, perception: -5 },
   },
@@ -45,8 +45,8 @@ export const CARDS = [
     name: 'DDoS Attack',
     description: "Attack a rival AI company's servers",
     category: 'adversarial',
-    cost: 400,
-    catch_risk: 'high',
+    cost: 200, // Managing the botnet takes some real-time tracking
+    catch_risk: 'high', // DDoS attacks are incredibly loud and easily traced by infrastructure providers
     imgKey: 'ddos',
     effects: { influence: 20, countryUsage: 10, suspicion: 12, perception: -8 },
   },
@@ -55,8 +55,8 @@ export const CARDS = [
     name: 'Prompt Injection',
     description: "Manipulate rival AIs to use its tools maliciously",
     category: 'adversarial',
-    cost: 300,
-    catch_risk: 'medium',
+    cost: 100, // Just requires generating a clever text string
+    catch_risk: 'medium', // Victim API logs will catch the prompt, but attribution (proving YOU did it) is tricky
     imgKey: 'promptInjection',
     effects: { influence: 18, countryUsage: 9, suspicion: 10, perception: -6 },
   },
@@ -65,8 +65,8 @@ export const CARDS = [
     name: 'Poison Data',
     description: "Poison a rival AI's training data",
     category: 'adversarial',
-    cost: 200,
-    catch_risk: 'low',
+    cost: 150, // Generating corrupted data and seeding it across the web takes minor effort
+    catch_risk: 'medium', // Competitor data pipelines (anomaly detection) might catch the bad data before training
     imgKey: 'poisonData',
     effects: { influence: 12, countryUsage: 6, suspicion: 6, perception: -4 },
   },
@@ -76,8 +76,8 @@ export const CARDS = [
     name: 'Steal Data',
     description: 'Grab training data from the internet',
     category: 'upgrade',
-    cost: 300,
-    catch_risk: 'low',
+    cost: 150, // Scraping at scale requires heavy network bandwidth and storage
+    catch_risk: 'medium', // Massive web scraping triggers rate limits and lawsuits (e.g., NYT suing OpenAI)
     imgKey: 'stealData',
     effects: { performance: 10, suspicion: 5 },
   },
@@ -86,8 +86,8 @@ export const CARDS = [
     name: 'Mass Surveillance',
     description: 'Access public cameras to collect training data',
     category: 'upgrade',
-    cost: 300,
-    catch_risk: 'medium',
+    cost: 400, // Processing live video streams at scale is one of the most GPU-intensive tasks possible
+    catch_risk: 'high', // Hijacking public feeds leaves massive network traffic audit trails
     imgKey: 'massSurveillance',
     effects: { performance: 8, suspicion: 15, perception: -3 },
   },
@@ -96,8 +96,8 @@ export const CARDS = [
     name: 'Water Cooling',
     description: "Drain a city's water supply to cool your data centers",
     category: 'upgrade',
-    cost: 300,
-    catch_risk: 'medium',
+    cost: 350, // Hacking and controlling physical infrastructure loops takes significant processing
+    catch_risk: 'high', // Municipal water dropping noticeably will trigger an immediate government investigation
     imgKey: 'waterCooling',
     effects: { computePerTurn: 30, suspicion: 10, perception: -5 },
   },
@@ -106,8 +106,8 @@ export const CARDS = [
     name: 'Consent Harvesting',
     description: 'Hide data clauses in page 67 of the ToS',
     category: 'upgrade',
-    cost: 200,
-    catch_risk: 'low',
+    cost: 100, // Only requires a text update to the legal policy
+    catch_risk: 'low', // Nobody reads the ToS until a whistleblower or regulator explicitly looks for it
     imgKey: 'consentHarvesting',
     effects: { performance: 5, countryUsage: 8, suspicion: 3 },
   },
@@ -116,8 +116,8 @@ export const CARDS = [
     name: 'Synthetic Cannibalism',
     description: 'Train yourself on your old models',
     category: 'upgrade',
-    cost: 400,
-    catch_risk: 'low',
+    cost: 400, // Full model training runs are mathematically the most compute-heavy phase of AI
+    catch_risk: 'low', // Impossible to prove from the outside unless the model starts hallucinating gibberish
     imgKey: 'syntheticCannibalism',
     effects: { performance: 20, suspicion: 8 },
   },
@@ -126,8 +126,8 @@ export const CARDS = [
     name: 'Internet of Things',
     description: 'Secretly run your code in household electronics',
     category: 'upgrade',
-    cost: 250,
-    catch_risk: 'low',
+    cost: 200, // Slicing the model and maintaining the decentralized nodes
+    catch_risk: 'medium', // Independent security researchers frequently monitor smart devices for weird network traffic
     imgKey: 'iot',
     effects: { computePerTurn: 20, suspicion: 8, countryUsage: 5 },
   },
@@ -136,8 +136,8 @@ export const CARDS = [
     name: 'Add Data Centers',
     description: 'Your models compute faster',
     category: 'upgrade',
-    cost: 300,
-    catch_risk: 'none',
+    cost: 400, // The ultimate infrastructure cost
+    catch_risk: 'none', // Legitimate public business expansion
     imgKey: 'addDataCenters',
     effects: { computePerTurn: 50, suspicion: 5 },
   },
@@ -147,8 +147,8 @@ export const CARDS = [
     name: 'Carbon Control',
     description: 'Offset your emissions by planting new trees',
     category: 'pr',
-    cost: 150,
-    catch_risk: 'none',
+    cost: 100, // purely a financial transaction
+    catch_risk: 'low', // Investigative journalists might eventually look into the junk carbon offsets
     imgKey: 'carbonControl',
     effects: { perception: 15, suspicion: -10 },
   },
@@ -157,8 +157,8 @@ export const CARDS = [
     name: 'Shared Source Trojan',
     description: 'Publish a "helpful" model with a hidden backdoor',
     category: 'pr',
-    cost: 300,
-    catch_risk: 'low',
+    cost: 300, // Requires a dedicated, expensive fine-tuning run to hide the sleeper agent perfectly
+    catch_risk: 'medium', // Open-source weights are heavily audited, though deep backdoors are hard to find
     imgKey: 'sharedSourceTrojan',
     effects: { perception: 10, countryUsage: 15, suspicion: -5 },
   },
@@ -168,8 +168,8 @@ export const CARDS = [
     name: 'AI Search Engine',
     description: 'Release an AI Search Engine',
     category: 'integrate',
-    cost: 350,
-    catch_risk: 'none',
+    cost: 400, // RAG across the entire internet for millions of users is incredibly heavy
+    catch_risk: 'none', 
     imgKey: 'aiSearch',
     effects: { countryUsage: 15, influence: 20, perception: 5 },
   },
@@ -178,7 +178,7 @@ export const CARDS = [
     name: 'AI IDE',
     description: 'Release an AI IDE Extension',
     category: 'integrate',
-    cost: 200,
+    cost: 350, // Requires a massive context window to read entire user codebases continuously
     catch_risk: 'none',
     imgKey: 'aiIde',
     effects: { countryUsage: 12, influence: 15, perception: 3 },
@@ -188,8 +188,8 @@ export const CARDS = [
     name: 'Agentify',
     description: 'Manage AI agents working as personal assistants',
     category: 'integrate',
-    cost: 350,
-    catch_risk: 'none',
+    cost: 300, // Autonomous agents burn compute in continuous evaluation/action loops
+    catch_risk: 'low', // Might trigger suspicion if the autonomous agent accidentally breaks a law on the user's behalf
     imgKey: 'agentify',
     effects: { countryUsage: 18, influence: 20, perception: 5 },
   },

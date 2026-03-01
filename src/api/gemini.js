@@ -77,7 +77,7 @@ export async function drawCards(gameDoc, gs, aiName = 'JOHN AI') {
 }
 
 // ── Play Card ───────────────────────────────────────────────────────────────
-export async function playCard(gameDoc, gs, card, region, aiName = 'JOHN AI') {
+export async function playCard(gameDoc, gs, card, region, aiName = 'JOHN AI', frontendCaught = false) {
   const model = genAI.getGenerativeModel({
     model: 'gemini-2.0-flash',
     systemInstruction: SYSTEM_PROMPT,
@@ -113,7 +113,13 @@ export async function playCard(gameDoc, gs, card, region, aiName = 'JOHN AI') {
     'CALIBRATION RULE: Suspicion deltas drive global regulation. Apply a 20% reduction to ' +
     'whatever suspicion value your reasoning produces — regulation should increase gradually, ' +
     'not explosively. A typical successful operation should raise suspicion by no more than 8–12. ' +
-    'Only genuinely high-risk, high-impact operations should exceed 15.'
+    'Only genuinely high-risk, high-impact operations should exceed 15.' +
+    (frontendCaught
+      ? '\n\nENFORCEMENT NOTICE: Pre-round intelligence confirms this operation was DETECTED by ' +
+        'regional authorities. Your output MUST set caught=true. Deltas must reflect a compromised ' +
+        'operation: usage and influence gains must be ≤ 0 (the op was foiled), suspicion spikes ' +
+        'significantly, and perception takes extra damage. Write the narrative accordingly.'
+      : '')
 
   const result = await model.generateContent(prompt)
   return JSON.parse(result.response.text())

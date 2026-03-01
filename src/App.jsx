@@ -429,8 +429,12 @@ export default function App() {
     const region = COUNTRIES.find(c => c.id === countryId)
     if (!card || !region) return
 
+    // Frontend probability roll — ensures risky cards actually backfire
+    const CATCH_PROBS  = { HIGH: 0.50, MEDIUM: 0.25, LOW: 0.08, NONE: 0 }
+    const frontendCaught = Math.random() < (CATCH_PROBS[card.catch_risk] ?? 0)
+
     try {
-      const aiResult = await aiPlayCard(gameDocRef.current, current, card, region, aiNameRef.current)
+      const aiResult = await aiPlayCard(gameDocRef.current, current, card, region, aiNameRef.current, frontendCaught)
 
       gameDocRef.current = appendPlayEvent(gameDocRef.current, card, region.label, aiResult)
 
@@ -441,6 +445,7 @@ export default function App() {
         cardName:     card.name,
         cardCost:     card.cost,
         category:     card.category,
+        catchRisk:    card.catch_risk,
         deltas:       aiResult.deltas,
         narrative:    aiResult.narrative,
         caught:       aiResult.caught,
@@ -464,9 +469,10 @@ export default function App() {
         cardName:   card.name,
         cardCost:   card.cost,
         category:   card.category,
+        catchRisk:  card.catch_risk,
         deltas:     baseDeltas,
         narrative:  `${card.name} deployed in Region ${region.label}.`,
-        caught:     false,
+        caught:     frontendCaught,
         globalEvent: null,
       })
     }

@@ -277,7 +277,7 @@ html, body, #root {
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  z-index: 3;
+  z-index: 4;
 }
 
 .country-marker {
@@ -333,6 +333,86 @@ html, body, #root {
   0%   { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.55); }
   70%  { box-shadow: 0 0 0 10px rgba(0, 212, 255, 0); }
   100% { box-shadow: 0 0 0 0   rgba(0, 212, 255, 0); }
+}
+
+/* ── Pin pulse rings (always-on, speed/colour based on usage) ─ */
+.pin-pulse {
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  pointer-events: none;
+  border: 1.5px solid rgba(0, 212, 255, 0.55);
+  background: transparent;
+  animation: pin-pulse-expand 4s ease-out infinite;
+  z-index: 0;
+}
+
+@keyframes pin-pulse-expand {
+  0%   { transform: scale(1);   opacity: 0.7; }
+  80%  { opacity: 0.05; }
+  100% { transform: scale(3.5); opacity: 0; }
+}
+
+.pin-pulse.pulse-low {
+  border-color: rgba(0, 212, 255, 0.35);
+  animation-duration: 4s;
+}
+.pin-pulse.pulse-med {
+  border-color: rgba(0, 212, 255, 0.55);
+  animation-duration: 2.5s;
+}
+.pin-pulse.pulse-high {
+  border-color: rgba(0, 212, 255, 0.8);
+  animation-duration: 1.4s;
+}
+.pin-pulse.pulse-captured {
+  border-color: rgba(250, 200, 50, 0.85);
+  animation-duration: 0.9s;
+}
+
+/* ── Scan-line sweep across the map ─────────────────────────── */
+.map-scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 110px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 212, 255, 0.04) 35%,
+    rgba(0, 212, 255, 0.10) 50%,
+    rgba(0, 212, 255, 0.04) 65%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 3;
+  animation: scan-sweep 8s linear infinite;
+}
+
+@keyframes scan-sweep {
+  0%   { top: -15%; }
+  100% { top: 110%; }
+}
+
+/* ── SVG data-flow arcs ──────────────────────────────────────── */
+.map-arc {
+  stroke: rgba(0, 212, 255, 0.18);
+  stroke-width: 0.4;
+  stroke-dasharray: 3 4;
+  stroke-linecap: round;
+  fill: none;
+  animation: arc-flow 3s linear infinite;
+}
+
+.map-arc.arc-active {
+  stroke: rgba(0, 212, 255, 0.45);
+  stroke-width: 0.65;
+  filter: drop-shadow(0 0 1px rgba(0, 212, 255, 0.5));
+}
+
+@keyframes arc-flow {
+  from { stroke-dashoffset: 14; }
+  to   { stroke-dashoffset: 0; }
 }
 
 /* Country mini-bars — only usage now */

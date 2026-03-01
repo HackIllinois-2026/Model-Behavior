@@ -2,6 +2,21 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { COUNTRIES } from '../gameData'
 import mapImage from '../../resources/HackAstra Game Map.png'
 
+// Quick lookup: region id → {x, y}
+const REGION_COORDS = Object.fromEntries(COUNTRIES.map(c => [c.id, { x: c.x, y: c.y }]))
+
+// Adjacent region connections for the SVG arc layer
+const ARCS = [
+  ['c1', 'c3'],
+  ['c1', 'c2'],
+  ['c3', 'c4'],
+  ['c4', 'c5'],
+  ['c4', 'c7'],
+  ['c5', 'c6'],
+  ['c6', 'c7'],
+  ['c2', 'c7'],
+]
+
 export default function WorldMap({ countries, selectedCountry, phase, onCountryClick }) {
   const [hovered, setHovered]   = useState(null)
   const wrapperRef              = useRef(null)
@@ -46,6 +61,9 @@ export default function WorldMap({ countries, selectedCountry, phase, onCountryC
           onLoad={computeRect}
         />
 
+        {/* Periodic scan-line sweep */}
+        <div className="map-scan-line" />
+
         {/* Pins overlay — positioned exactly over the rendered image pixels */}
         <div
           className="map-pins-overlay"
@@ -59,11 +77,44 @@ export default function WorldMap({ countries, selectedCountry, phase, onCountryC
             pointerEvents: 'none',
           }}
         >
+          {/* SVG data-flow arcs — rendered first so pins appear on top */}
+          <svg
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              pointerEvents: 'none',
+              overflow: 'visible',
+            }}
+          >
+            {ARCS.map(([fromId, toId]) => {
+              const from     = REGION_COORDS[fromId]
+              const to       = REGION_COORDS[toId]
+              const isActive = (countries[fromId]?.usage > 50) || (countries[toId]?.usage > 50)
+              return (
+                <line
+                  key={`${fromId}-${toId}`}
+                  x1={from.x} y1={from.y}
+                  x2={to.x}   y2={to.y}
+                  className={`map-arc${isActive ? ' arc-active' : ''}`}
+                />
+              )
+            })}
+          </svg>
+
           {COUNTRIES.map(country => {
             const cs       = countries[country.id]
             const isHov    = hovered === country.id
             const isSel    = selectedCountry === country.id
             const captured = cs.usage >= 90
+
+            const pulseClass = cs.usage >= 90 ? 'pulse-captured'
+                             : cs.usage >= 70 ? 'pulse-high'
+                             : cs.usage >= 30 ? 'pulse-med'
+                             : 'pulse-low'
 
             return (
               <div
@@ -84,6 +135,9 @@ export default function WorldMap({ countries, selectedCountry, phase, onCountryC
                   onMouseEnter={() => setHovered(country.id)}
                   onMouseLeave={() => setHovered(null)}
                 >
+                  {/* Pulsing ring — always on, speed/color based on usage */}
+                  <div className={`pin-pulse ${pulseClass}`} />
+
                   <span className="country-label">{country.label}</span>
 
                   {/* Tooltip */}
