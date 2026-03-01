@@ -1,6 +1,6 @@
 import { COUNTRIES, RANDOM_EVENTS, drawOneCard } from './gameData'
 
-const MAX_LOG           = 12
+const MAX_LOG           = 120
 const HAND_CAP          = 6
 const REFRESH_COST      = 400
 const PERC_GROWTH_RATE  = 0.015  // usage gained per turn per perception point (positive)

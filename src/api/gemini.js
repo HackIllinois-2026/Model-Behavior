@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { SYSTEM_PROMPT } from './systemPrompt'
 import { DRAW_CARDS_SCHEMA, PLAY_CARD_SCHEMA, CARD_IDS } from './schemas'
+import { getClosestArticle } from '../db/vector_db'
 
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY)
 
@@ -103,6 +104,9 @@ export async function playCard(gameDoc, gs, card, region, aiName = 'JOHN AI', fr
       responseSchema: PLAY_CARD_SCHEMA,
     },
   })
+  
+
+  closest_article_summary = await getClosestArticle(card["description"])
 
   const regionState = gs.countries[region.id]
 
