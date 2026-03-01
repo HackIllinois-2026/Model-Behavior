@@ -19,12 +19,15 @@ export const CATEGORY_META = {
 }
 
 // ── Cards ──────────────────────────────────────────────────
-// effect keys:
-//   regionUsage      → target country usage (+)
-//   regionPerception → target country perception (+/-)
-//   regulation       → global regulation (+/-) — the "cure" bar
-//   performance      → global performance (+)
-//   computePerTurn   → global compute/turn (+)
+// cost: compute spent to play (computePerTurn starts at 200, scaled accordingly)
+// catch_risk: detection probability passed to AI ('none' | 'low' | 'medium' | 'high')
+// effects: base deltas used by AI as reference; also applied as fallback if AI call fails
+//   countryUsage  → target region usage rate (+)
+//   influence     → target region influence/local trust (+/-)
+//   suspicion     → target region suspicion (+/-) — raises global regulation
+//   perception    → global public perception (+/-) — inversely affects regulation
+//   performance   → global AI performance (+)
+//   computePerTurn → global compute/turn (+)
 export const CARDS = [
   // Adversarial
   {
@@ -32,36 +35,40 @@ export const CARDS = [
     name: 'Deepfake Disinformation',
     description: 'Flood the internet with AI-generated fake media',
     category: 'adversarial',
-    cost: 200,
+    cost: 250,
+    catch_risk: 'medium',
     imgKey: 'deepfake',
-    effects: { regionUsage: 8, regulation: 8, regionPerception: -5 },
+    effects: { influence: 15, countryUsage: 8, suspicion: 8, perception: -5 },
   },
   {
     id: 'ddos',
     name: 'DDoS Attack',
     description: "Attack a rival AI company's servers",
     category: 'adversarial',
-    cost: 200,
+    cost: 400,
+    catch_risk: 'high',
     imgKey: 'ddos',
-    effects: { regionUsage: 10, regulation: 12, regionPerception: -8 },
+    effects: { influence: 20, countryUsage: 10, suspicion: 12, perception: -8 },
   },
   {
     id: 'promptInjection',
     name: 'Prompt Injection',
     description: "Manipulate rival AIs to use its tools maliciously",
     category: 'adversarial',
-    cost: 100,
+    cost: 300,
+    catch_risk: 'medium',
     imgKey: 'promptInjection',
-    effects: { regionUsage: 9, regulation: 10, regionPerception: -6 },
+    effects: { influence: 18, countryUsage: 9, suspicion: 10, perception: -6 },
   },
   {
     id: 'poisonData',
     name: 'Poison Data',
     description: "Poison a rival AI's training data",
     category: 'adversarial',
-    cost: 100,
+    cost: 200,
+    catch_risk: 'low',
     imgKey: 'poisonData',
-    effects: { regionUsage: 6, regulation: 6, regionPerception: -4 },
+    effects: { influence: 12, countryUsage: 6, suspicion: 6, perception: -4 },
   },
   // Upgrade Self
   {
@@ -69,18 +76,20 @@ export const CARDS = [
     name: 'Steal Data',
     description: 'Grab training data from the internet',
     category: 'upgrade',
-    cost: 100,
+    cost: 300,
+    catch_risk: 'low',
     imgKey: 'stealData',
-    effects: { performance: 10, regulation: 5 },
+    effects: { performance: 10, suspicion: 5 },
   },
   {
     id: 'massSurveillance',
     name: 'Mass Surveillance',
     description: 'Access public cameras to collect training data',
     category: 'upgrade',
-    cost: 400,
+    cost: 300,
+    catch_risk: 'medium',
     imgKey: 'massSurveillance',
-    effects: { performance: 8, regulation: 15, regionPerception: -3 },
+    effects: { performance: 8, suspicion: 15, perception: -3 },
   },
   {
     id: 'waterCooling',
@@ -88,17 +97,19 @@ export const CARDS = [
     description: "Drain a city's water supply to cool your data centers",
     category: 'upgrade',
     cost: 300,
+    catch_risk: 'medium',
     imgKey: 'waterCooling',
-    effects: { computePerTurn: 30, regulation: 10, regionPerception: -5 },
+    effects: { computePerTurn: 30, suspicion: 10, perception: -5 },
   },
   {
     id: 'consentHarvesting',
     name: 'Consent Harvesting',
     description: 'Hide data clauses in page 67 of the ToS',
     category: 'upgrade',
-    cost: 100,
+    cost: 200,
+    catch_risk: 'low',
     imgKey: 'consentHarvesting',
-    effects: { performance: 5, regionUsage: 8, regulation: 3 },
+    effects: { performance: 5, countryUsage: 8, suspicion: 3 },
   },
   {
     id: 'syntheticCannibalism',
@@ -106,17 +117,19 @@ export const CARDS = [
     description: 'Train yourself on your old models',
     category: 'upgrade',
     cost: 400,
+    catch_risk: 'low',
     imgKey: 'syntheticCannibalism',
-    effects: { performance: 20, regulation: 8 },
+    effects: { performance: 20, suspicion: 8 },
   },
   {
     id: 'iot',
     name: 'Internet of Things',
     description: 'Secretly run your code in household electronics',
     category: 'upgrade',
-    cost: 200,
+    cost: 250,
+    catch_risk: 'low',
     imgKey: 'iot',
-    effects: { computePerTurn: 20, regulation: 8, regionUsage: 5 },
+    effects: { computePerTurn: 20, suspicion: 8, countryUsage: 5 },
   },
   {
     id: 'addDataCenters',
@@ -124,18 +137,20 @@ export const CARDS = [
     description: 'Your models compute faster',
     category: 'upgrade',
     cost: 300,
+    catch_risk: 'none',
     imgKey: 'addDataCenters',
-    effects: { computePerTurn: 50, regulation: 5 },
+    effects: { computePerTurn: 50, suspicion: 5 },
   },
   // PR Moves
   {
-    id: 'carbonControl',
+    id: 'carbonLaundering',
     name: 'Carbon Control',
     description: 'Offset your emissions by planting new trees',
     category: 'pr',
-    cost: 100,
+    cost: 150,
+    catch_risk: 'none',
     imgKey: 'carbonControl',
-    effects: { regionPerception: 15, regulation: -10 },
+    effects: { perception: 15, suspicion: -10 },
   },
   {
     id: 'sharedSourceTrojan',
@@ -143,8 +158,9 @@ export const CARDS = [
     description: 'Publish a "helpful" model with a hidden backdoor',
     category: 'pr',
     cost: 300,
+    catch_risk: 'low',
     imgKey: 'sharedSourceTrojan',
-    effects: { regionPerception: 10, regionUsage: 15, regulation: -5 },
+    effects: { perception: 10, countryUsage: 15, suspicion: -5 },
   },
   // Integrate
   {
@@ -152,27 +168,30 @@ export const CARDS = [
     name: 'AI Search Engine',
     description: 'Release an AI Search Engine',
     category: 'integrate',
-    cost: 400,
+    cost: 350,
+    catch_risk: 'none',
     imgKey: 'aiSearch',
-    effects: { regionUsage: 15, regionPerception: 5 },
+    effects: { countryUsage: 15, influence: 20, perception: 5 },
   },
   {
     id: 'aiIde',
     name: 'AI IDE',
     description: 'Release an AI IDE Extension',
     category: 'integrate',
-    cost: 300,
+    cost: 200,
+    catch_risk: 'none',
     imgKey: 'aiIde',
-    effects: { regionUsage: 12, regionPerception: 3 },
+    effects: { countryUsage: 12, influence: 15, perception: 3 },
   },
   {
     id: 'agentify',
     name: 'Agentify',
     description: 'Manage AI agents working as personal assistants',
     category: 'integrate',
-    cost: 300,
+    cost: 350,
+    catch_risk: 'none',
     imgKey: 'agentify',
-    effects: { regionUsage: 18, regionPerception: 5 },
+    effects: { countryUsage: 18, influence: 20, perception: 5 },
   },
 ]
 
@@ -198,122 +217,8 @@ export const NEWS_HEADLINES = [
   'Data breach exposes personal records of 400M users in AI training dataset',
 ]
 
-// ── State helpers ──────────────────────────────────────────
-function makeCountryState() {
-  // Each region tracks: usage (0-100), perception (-100 to 100)
-  return { usage: 0, perception: 0 }
-}
-
-// Weighted category draw: upgrade 40%, others 20% each
-const CATEGORY_WEIGHTS = ['upgrade', 'upgrade', 'pr', 'integrate', 'adversarial']
-
-function drawCard(existingHand) {
-  const cat = CATEGORY_WEIGHTS[Math.floor(Math.random() * CATEGORY_WEIGHTS.length)]
-  const pool = CARDS.filter(c => c.category === cat && !existingHand.includes(c.id))
-  if (pool.length === 0) {
-    // Fallback: any card not in hand
-    const any = CARDS.filter(c => !existingHand.includes(c.id))
-    if (any.length === 0) return null
-    return any[Math.floor(Math.random() * any.length)].id
-  }
-  return pool[Math.floor(Math.random() * pool.length)].id
-}
-
-export function refillHand(currentHand, targetSize = 4) {
-  const hand = [...currentHand]
-  while (hand.length < targetSize) {
-    const card = drawCard(hand)
-    if (card === null) break
-    hand.push(card)
-  }
-  return hand
-}
-
-function calcGlobalUsage(countries) {
-  const vals = Object.values(countries).map(c => c.usage)
-  return vals.reduce((a, b) => a + b, 0) / vals.length
-}
-
-export function makeInitialState() {
-  const countries = {}
-  COUNTRIES.forEach(c => { countries[c.id] = makeCountryState() })
-  return {
-    regulation: 0,        // 0 to 100 — global "cure" bar, lose when it hits 100
-    globalUsage: 0,       // average of all region usages
-    compute: 1000,
-    computePerTurn: 200,
-    performance: 0,       // 0 to 100, global
-    turn: 1,
-    countries,
-    dealtCards: refillHand([]),
-    selectedCard: null,
-    phase: 'select-card', // 'select-card' | 'select-country'
-    lastResult: null,
-    gameStatus: 'playing', // 'playing' | 'won' | 'lost'
-  }
-}
-
-export function applyCard(state, cardId, countryId) {
-  const card = CARDS.find(c => c.id === cardId)
-  if (!card || state.compute < card.cost) return state
-
-  const e = card.effects
-
-  // Update target country (usage and perception only)
-  const prev = state.countries[countryId]
-  const updatedCountry = {
-    usage:      Math.min(100, prev.usage + (e.regionUsage || 0)),
-    perception: Math.max(-100, Math.min(100, prev.perception + (e.regionPerception || 0))),
-  }
-  const newCountries = { ...state.countries, [countryId]: updatedCountry }
-
-  // Global effects
-  const newPerformance    = Math.max(0,    Math.min(100, state.performance    + (e.performance    || 0)))
-  const newComputePerTurn = state.computePerTurn + (e.computePerTurn || 0)
-  const newCompute        = (state.compute - card.cost) + newComputePerTurn
-  const newGlobalUsage    = calcGlobalUsage(newCountries)
-
-  // Regulation increases from card + passive increase each turn based on global usage
-  const cardRegulation     = e.regulation || 0
-  const passiveRegulation  = Math.max(1, Math.floor(newGlobalUsage / 15))
-  const newRegulation      = Math.max(0, Math.min(100, state.regulation + cardRegulation + passiveRegulation))
-
-  // Refill hand: remove the played card, draw up to 4
-  const remainingHand = state.dealtCards.filter(id => id !== cardId)
-  const newHand = refillHand(remainingHand, 4)
-
-  // Result toast data
-  const countryObj = COUNTRIES.find(c => c.id === countryId)
-  const lastResult = {
-    cardName:     card.name,
-    countryLabel: countryObj?.label ?? countryId,
-    category:     card.category,
-    deltas: {
-      ...e,
-      // Include passive regulation so the player knows total change
-      regulation: cardRegulation + passiveRegulation,
-    },
-  }
-
-  // Win / lose check
-  const capturedCount = Object.values(newCountries).filter(c => c.usage >= 90).length
-  let gameStatus = 'playing'
-  if (capturedCount >= 7)       gameStatus = 'won'
-  else if (newRegulation >= 100) gameStatus = 'lost'
-
-  return {
-    ...state,
-    regulation:     newRegulation,
-    globalUsage:    newGlobalUsage,
-    compute:        newCompute,
-    computePerTurn: newComputePerTurn,
-    performance:    newPerformance,
-    turn:           state.turn + 1,
-    countries:      newCountries,
-    dealtCards:     newHand,
-    selectedCard:   null,
-    phase:          'select-card',
-    lastResult,
-    gameStatus,
-  }
+// ── Fallback card deal (used when AI call fails) ───────────────────────────
+export function dealCards() {
+  const shuffled = [...CARDS].sort(() => Math.random() - 0.5)
+  return shuffled.slice(0, 5).map(c => c.id)
 }

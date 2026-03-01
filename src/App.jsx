@@ -1,5 +1,8 @@
-import { useState, useEffect, useCallback } from 'react'
-import { makeInitialState, applyCard, CARDS, CATEGORY_META } from './gameData'
+import { useState, useEffect, useCallback, useReducer, useRef } from 'react'
+import { CARDS, CATEGORY_META, COUNTRIES, dealCards } from './gameData'
+import { gameReducer, INITIAL_STATE } from './gameReducer'
+import { createGameDoc, appendDrawEvent, appendPlayEvent } from './api/gameDoc'
+import { drawCards as aiDrawCards, playCard as aiPlayCard } from './api/gemini'
 import CARD_IMAGES from './cardImages'
 import RegulationBar from './components/PerceptionBar'
 import StatsPanel    from './components/StatsPanel'
@@ -17,11 +20,12 @@ function CardModal({ cardId, onClose }) {
 
   // Build human-readable effect list
   const effectLabels = {
-    regionUsage:      { label: 'Region Usage',   sign: true,  good: true  },
-    regionPerception: { label: 'Perception',      sign: true,  good: true  },
-    regulation:       { label: 'Regulation',      sign: true,  good: false }, // lower is better
-    performance:      { label: 'Performance',     sign: true,  good: true  },
-    computePerTurn:   { label: 'Compute / turn',  sign: true,  good: true  },
+    countryUsage:   { label: 'Region Usage',   sign: true, good: true  },
+    influence:      { label: 'Influence',       sign: true, good: true  },
+    suspicion:      { label: 'Suspicion',       sign: true, good: false },
+    perception:     { label: 'Perception',      sign: true, good: true  },
+    performance:    { label: 'Performance',     sign: true, good: true  },
+    computePerTurn: { label: 'Compute / turn',  sign: true, good: true  },
   }
 
   const effects = Object.entries(card.effects)
@@ -62,39 +66,74 @@ function CardModal({ cardId, onClose }) {
   )
 }
 
+// ── Loading overlay ────────────────────────────────────────
+function LoadingOverlay({ phase }) {
+  if (phase !== 'loading' && phase !== 'resolving') return null
+  const msg = phase === 'resolving'
+    ? 'PROCESSING OPERATION...'
+    : 'PLANNING NEXT OPERATIONS...'
+  return (
+    <div className="loading-overlay">
+      <div className="loading-box">
+        <div className="loading-spinner" />
+        <div className="loading-msg">{msg}</div>
+      </div>
+    </div>
+  )
+}
+
 // ── Result toast ───────────────────────────────────────────
 function ResultToast({ result, onDismiss }) {
   useEffect(() => {
     if (!result) return
-    const t = setTimeout(onDismiss, 3200)
+    const t = setTimeout(onDismiss, 5000)
     return () => clearTimeout(t)
   }, [result, onDismiss])
 
   if (!result) return null
 
-  const { cardName, countryLabel, category, deltas } = result
+  const { cardName, countryLabel, category, caught, narrative, globalEvent, deltas, impact_level } = result
   const catColor = CATEGORY_META[category]?.color ?? '#888'
 
-  const effectLabels = {
-    regionUsage:      { label: 'Usage',          good: true  },
-    regionPerception: { label: 'Perception',      good: true  },
-    regulation:       { label: 'Regulation',      good: false },
-    performance:      { label: 'Performance',     good: true  },
-    computePerTurn:   { label: 'Compute/turn',    good: true  },
+  const IMPACT_COLOR = {
+    minimal:     '#6b7280',
+    moderate:    '#f59e0b',
+    significant: '#f97316',
+    critical:    '#ef4444',
+  }
+
+  const DELTA_LABELS = {
+    countryUsage:   'Usage',
+    influence:      'Influence',
+    suspicion:      'Suspicion',
+    perception:     'Perception',
+    performance:    'Performance',
+    computePerTurn: 'Compute/turn',
   }
 
   const deltaLines = Object.entries(deltas)
-    .filter(([, v]) => v !== 0)
-    .map(([k, v]) => {
-      const meta = effectLabels[k] ?? { label: k, good: true }
-      const positive = meta.good ? v > 0 : v < 0
-      return { label: meta.label, value: `${v > 0 ? '+' : ''}${v}`, positive }
-    })
+    .filter(([k, v]) => v !== 0 && DELTA_LABELS[k])
+    .map(([k, v]) => ({
+      label:    DELTA_LABELS[k],
+      value:    `${v > 0 ? '+' : ''}${Math.round(v)}`,
+      positive: v > 0,
+    }))
 
   return (
     <div className="result-toast" style={{ borderColor: catColor }}>
-      <div className="rt-header" style={{ color: catColor }}>{cardName}</div>
-      <div className="rt-sub">Deployed in Region {countryLabel}</div>
+      <div className="rt-header" style={{ color: catColor }}>
+        {cardName}
+        {caught && <span className="rt-caught"> ⚠ CAUGHT</span>}
+      </div>
+      <div className="rt-sub">
+        Deployed in Region {countryLabel}
+        {impact_level && (
+          <span className="rt-impact" style={{ color: IMPACT_COLOR[impact_level] ?? '#888' }}>
+            {' '}· {impact_level.toUpperCase()}
+          </span>
+        )}
+      </div>
+      {narrative && <div className="rt-narrative">{narrative}</div>}
       <div className="rt-deltas">
         {deltaLines.map(d => (
           <span key={d.label} className={`rt-delta ${d.positive ? 'rt-pos' : 'rt-neg'}`}>
@@ -102,6 +141,17 @@ function ResultToast({ result, onDismiss }) {
           </span>
         ))}
       </div>
+      {globalEvent && <div className="rt-global-event">{globalEvent}</div>}
+    </div>
+  )
+}
+
+// ── Turn narrative banner ──────────────────────────────────
+function NarrativeBanner({ text }) {
+  if (!text) return null
+  return (
+    <div className="narrative-banner">
+      <span className="narrative-prefix">JOHN AI:</span> {text}
     </div>
   )
 }
@@ -129,41 +179,130 @@ function GameOverlay({ status, onRestart }) {
 
 // ── App ────────────────────────────────────────────────────
 export default function App() {
-  const [gs, setGs]               = useState(makeInitialState)
+  const [gs, dispatch]         = useReducer(gameReducer, INITIAL_STATE)
   const [selectedCountry, setSelectedCountry] = useState(null)
-  const [cardModal, setCardModal] = useState(null) // card id for right-click detail
+  const [cardModal, setCardModal]             = useState(null)
+  const [turnNarrative, setTurnNarrative]     = useState('')
+  const [recommendedCard, setRecommendedCard] = useState(null)
 
-  const handleCardClick = useCallback(cardId => {
-    setGs(s => {
-      if (s.selectedCard === cardId) {
-        return { ...s, selectedCard: null, phase: 'select-card' }
+  // gameDocRef holds the growing RAG document — updated synchronously before dispatches
+  const gameDocRef = useRef('')
+  // gsRef gives async callbacks access to current state without stale closures
+  const gsRef      = useRef(gs)
+  useEffect(() => { gsRef.current = gs }, [gs])
+
+  // ── Seed game document on mount ──────────────────────────
+  useEffect(() => {
+    gameDocRef.current = createGameDoc(INITIAL_STATE)
+  }, [])
+
+  // ── Draw cards whenever phase enters 'loading' ───────────
+  useEffect(() => {
+    if (gs.phase !== 'loading' || gs.gameStatus !== 'playing') return
+
+    let active = true
+
+    async function doDrawCards() {
+      try {
+        const aiResult = await aiDrawCards(gameDocRef.current, gs)
+        if (!active) return
+        gameDocRef.current = appendDrawEvent(
+          gameDocRef.current, gs.turn, aiResult.cards, aiResult.narrative
+        )
+        setTurnNarrative(aiResult.narrative)
+        setRecommendedCard(aiResult.recommended ?? null)
+        dispatch({ type: 'SET_DEALT_CARDS', cards: aiResult.cards })
+      } catch (err) {
+        if (!active) return
+        console.error('AI drawCards failed — using random fallback:', err)
+        dispatch({ type: 'SET_DEALT_CARDS', cards: dealCards() })
       }
-      return { ...s, selectedCard: cardId, phase: 'select-country' }
-    })
+    }
+
+    doDrawCards()
+    return () => { active = false }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gs.phase, gs.gameStatus])
+
+  // ── Card selection ───────────────────────────────────────
+  const handleCardClick = useCallback(cardId => {
+    const { phase } = gsRef.current
+    if (phase !== 'select-card' && phase !== 'select-country') return
+    dispatch({ type: 'SELECT_CARD', cardId })
   }, [])
 
   const handleCardRightClick = useCallback(cardId => {
     setCardModal(cardId)
   }, [])
 
-  const handleCountryClick = useCallback(countryId => {
+  // ── Country selection + async card resolution ────────────
+  const handleCountryClick = useCallback(async countryId => {
+    const current = gsRef.current
+    if (current.phase !== 'select-country' || !current.selectedCard) return
+
     setSelectedCountry(countryId)
-    setGs(s => {
-      if (s.phase === 'select-country' && s.selectedCard) {
-        return applyCard(s, s.selectedCard, countryId)
+    dispatch({ type: 'SET_RESOLVING' })
+
+    const card   = CARDS.find(c => c.id === current.selectedCard)
+    const region = COUNTRIES.find(c => c.id === countryId)
+    if (!card || !region) return
+
+    try {
+      const aiResult = await aiPlayCard(gameDocRef.current, current, card, region)
+
+      // Append the play event to the RAG doc before dispatching (so next draw sees it)
+      gameDocRef.current = appendPlayEvent(gameDocRef.current, card, region.label, aiResult)
+
+      dispatch({
+        type:         'APPLY_RESULT',
+        countryId,
+        cardName:     card.name,
+        cardCost:     card.cost,
+        category:     card.category,
+        deltas:       aiResult.deltas,
+        narrative:    aiResult.narrative,
+        caught:       aiResult.caught,
+        globalEvent:  aiResult.globalEvent  ?? null,
+        impact_level: aiResult.impact_level ?? null,
+      })
+    } catch (err) {
+      console.error('AI playCard failed — applying base effects:', err)
+      // Fallback: apply the card's static base effects (already in AI delta format)
+      const baseDeltas = {
+        influence:      card.effects.influence      ?? 0,
+        countryUsage:   card.effects.countryUsage   ?? 0,
+        suspicion:      card.effects.suspicion       ?? 0,
+        perception:     card.effects.perception      ?? 0,
+        performance:    card.effects.performance     ?? 0,
+        computePerTurn: card.effects.computePerTurn  ?? 0,
       }
-      return s
-    })
+      dispatch({
+        type:       'APPLY_RESULT',
+        countryId,
+        cardName:   card.name,
+        cardCost:   card.cost,
+        category:   card.category,
+        deltas:     baseDeltas,
+        narrative:  `${card.name} deployed in Region ${region.label}.`,
+        caught:     false,
+        globalEvent: null,
+      })
+    }
   }, [])
 
+  // ── Dismiss result toast ─────────────────────────────────
   const dismissResult = useCallback(() => {
-    setGs(s => ({ ...s, lastResult: null }))
+    dispatch({ type: 'CLEAR_RESULT' })
   }, [])
 
+  // ── Restart ──────────────────────────────────────────────
   const restartGame = useCallback(() => {
     setSelectedCountry(null)
     setCardModal(null)
-    setGs(makeInitialState())
+    setTurnNarrative('')
+    setRecommendedCard(null)
+    gameDocRef.current = createGameDoc(INITIAL_STATE)
+    dispatch({ type: 'RESTART' })
   }, [])
 
   const monthStr = `MONTH ${String(gs.turn).padStart(2, '0')}`
@@ -190,10 +329,12 @@ export default function App() {
         />
       </main>
 
-      {/* Card hand */}
+      {/* AI turn narrative + card hand */}
+      <NarrativeBanner text={gs.phase === 'select-card' ? turnNarrative : ''} />
       <CardHand
         dealtCards={gs.dealtCards}
         selectedCard={gs.selectedCard}
+        recommendedCard={recommendedCard}
         compute={gs.compute}
         phase={gs.phase}
         onCardClick={handleCardClick}
@@ -205,6 +346,7 @@ export default function App() {
 
       {/* Overlays */}
       <CardModal cardId={cardModal} onClose={() => setCardModal(null)} />
+      <LoadingOverlay phase={gs.phase} />
       <ResultToast result={gs.lastResult} onDismiss={dismissResult} />
       <GameOverlay status={gs.gameStatus} onRestart={restartGame} />
     </div>

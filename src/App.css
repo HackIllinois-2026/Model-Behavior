@@ -609,6 +609,25 @@ html, body, #root {
   margin-top: 4px;
 }
 
+/* Recommended card — AI's optimal pick this turn */
+.card-item.recommended {
+  box-shadow: 0 0 0 2px #facc15, 0 0 14px rgba(250, 204, 21, 0.4);
+}
+
+.card-recommend-badge {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-head);
+  font-size: 0.38rem;
+  letter-spacing: 0.15em;
+  color: #facc15;
+  white-space: nowrap;
+  text-shadow: 0 0 6px #facc15;
+  pointer-events: none;
+}
+
 /* ── News ticker ─────────────────────────────────────────── */
 .news-ticker {
   height: 34px;
@@ -666,6 +685,77 @@ html, body, #root {
   100% { transform: translateX(-100%); }
 }
 
+/* ── Loading overlay ─────────────────────────────────────── */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 5, 12, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 150;
+  backdrop-filter: blur(2px);
+}
+
+.loading-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-msg {
+  font-family: var(--font-head);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  text-shadow: 0 0 10px var(--accent);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* ── Turn narrative banner ───────────────────────────────── */
+.narrative-banner {
+  flex-shrink: 0;
+  padding: 6px 20px;
+  background: linear-gradient(90deg, rgba(0,212,255,0.06) 0%, transparent 100%);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  font-style: italic;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.narrative-prefix {
+  font-style: normal;
+  font-family: var(--font-head);
+  font-size: 0.6rem;
+  color: var(--accent);
+  letter-spacing: 0.12em;
+  margin-right: 8px;
+}
+
 /* ── Result toast ────────────────────────────────────────── */
 .result-toast {
   position: fixed;
@@ -675,10 +765,10 @@ html, body, #root {
   border: 1.5px solid var(--accent);
   border-radius: 6px;
   padding: 12px 16px;
-  min-width: 230px;
-  max-width: 300px;
+  min-width: 260px;
+  max-width: 340px;
   z-index: 100;
-  animation: toast-in 0.25s ease, toast-out 0.4s ease 2.8s forwards;
+  animation: toast-in 0.25s ease, toast-out 0.4s ease 4.6s forwards;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
 }
 
@@ -702,7 +792,42 @@ html, body, #root {
 .rt-sub {
   font-size: 0.65rem;
   color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.rt-caught {
+  color: var(--danger);
+  font-size: 0.7rem;
+  text-shadow: 0 0 8px var(--danger);
+}
+
+.rt-impact {
+  font-size: 0.6rem;
+  font-family: var(--font-head);
+  letter-spacing: 0.1em;
+  font-style: normal;
+}
+
+.rt-narrative {
+  font-size: 0.67rem;
+  color: #8fafc8;
+  line-height: 1.5;
+  font-style: italic;
   margin-bottom: 8px;
+  padding: 6px 8px;
+  background: rgba(255,255,255,0.03);
+  border-left: 2px solid var(--border);
+  border-radius: 2px;
+}
+
+.rt-global-event {
+  font-size: 0.63rem;
+  color: var(--warn);
+  margin-top: 6px;
+  padding: 4px 6px;
+  background: rgba(245, 158, 11, 0.08);
+  border-radius: 3px;
+  border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
 .rt-deltas {

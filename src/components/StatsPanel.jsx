@@ -102,7 +102,7 @@ export default function StatsPanel({ gameState }) {
             <MiniBar value={regionData.usage} colorClass="bar-green" />
 
             <div className="region-stat-label" style={{ marginTop: 6 }}>
-              <span>Perception</span>
+              <span>Influence</span>
               <span className={regionData.perception >= 0 ? 'usage-col' : 'susp-col'}>
                 {regionData.perception > 0 ? '+' : ''}{Math.round(regionData.perception)}
               </span>
