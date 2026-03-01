@@ -5,7 +5,7 @@ const HAND_CAP          = 6
 const REFRESH_COST      = 400
 const PERC_GROWTH_RATE  = 0.015  // usage gained per turn per perception point (positive)
 const PERC_DECAY_RATE   = 0.010  // usage lost  per turn per perception point (negative)
-const MAINTENANCE_RATE  = 0.30   // compute/turn cost per total usage point across all regions
+export const MAINTENANCE_RATE  = 0.30   // compute/turn cost per total usage point across all regions
 
 function makeCountryState() {
   return { usage: 0, perception: 0 }
@@ -73,12 +73,23 @@ export function gameReducer(state, action) {
       const regulationDelta   = Math.round(deltas.suspicion ?? 0) - Math.round(deltas.perception ?? 0)
       let   newRegulation     = Math.max(0, Math.min(100, state.regulation + regulationDelta))
 
-      // Hard enforcement when caught: extra regulation spike + cap usage gain at zero
+      // When caught: cap usage gains at zero
       if (caught) {
-        const caughtRegSpike = { HIGH: 12, MEDIUM: 7, LOW: 3, NONE: 0 }[catchRisk] ?? 5
-        newRegulation = Math.min(100, newRegulation + caughtRegSpike)
         updatedCountry = { ...updatedCountry, usage: Math.min(updatedCountry.usage, prev.usage) }
       }
+
+      // Regulation spike from exposure — default based on catch_risk, overridable by crisis choice.
+      // caughtRegOverride also fires when caught=false (ACCEPT choice: keeps gains but still spikes).
+      const baseRegSpike  = caught ? ({ HIGH: 12, MEDIUM: 7, LOW: 3, NONE: 0 }[catchRisk] ?? 5) : 0
+      const actualRegSpike = action.caughtRegOverride ?? baseRegSpike
+      if (actualRegSpike > 0) {
+        newRegulation = Math.min(100, newRegulation + actualRegSpike)
+      }
+
+      // Extra compute cost from crisis choice (e.g. DENY spends compute)
+      const newComputeAfterCrisis = action.computeDelta
+        ? Math.max(0, newCompute + action.computeDelta)
+        : newCompute
 
       const countryObj   = COUNTRIES.find(c => c.id === countryId)
       const countryLabel = countryObj?.label ?? countryId
@@ -87,7 +98,7 @@ export function gameReducer(state, action) {
       const computedDeltas = {
         countryUsage:   updatedCountry.usage      - prev.usage,
         influence:      updatedCountry.perception - prev.perception,
-        suspicion:      regulationDelta + (caught ? ({ HIGH: 12, MEDIUM: 7, LOW: 3, NONE: 0 }[catchRisk] ?? 5) : 0),
+        suspicion:      regulationDelta + actualRegSpike,
         performance:    newPerformance    - state.performance,
         computePerTurn: newComputePerTurn - state.computePerTurn,
       }
@@ -123,7 +134,7 @@ export function gameReducer(state, action) {
         ...state,
         regulation:          newRegulation,
         globalUsage:         calcGlobalUsage(finalCountries),
-        compute:             newCompute,
+        compute:             newComputeAfterCrisis,
         computePerTurn:      newComputePerTurn,
         performance:         newPerformance,
         countries:           finalCountries,
@@ -223,6 +234,10 @@ export function gameReducer(state, action) {
         selectedCard: null,
       }
     }
+
+    // Transition out of 'resolving' when a crisis choice modal is shown
+    case 'BEGIN_CRISIS':
+      return { ...state, phase: 'select-card' }
 
     case 'CLEAR_RESULT':
       return { ...state, lastResult: null }

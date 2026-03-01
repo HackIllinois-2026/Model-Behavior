@@ -1,4 +1,5 @@
 import { COUNTRIES } from '../gameData'
+import { MAINTENANCE_RATE } from '../gameReducer'
 
 function MiniBar({ value, max = 100, colorClass }) {
   return (
@@ -21,7 +22,11 @@ function StatRow({ label, value, colorClass }) {
 }
 
 export default function StatsPanel({ gameState }) {
-  const { compute, computePerTurn, performance, globalUsage, actionLog } = gameState
+  const { compute, computePerTurn, performance, globalUsage, actionLog, countries } = gameState
+
+  const totalUsage      = Object.values(countries).reduce((s, c) => s + c.usage, 0)
+  const maintenanceCost = Math.round(totalUsage * MAINTENANCE_RATE)
+  const netPerTurn      = Math.floor(computePerTurn) - maintenanceCost
 
   return (
     <aside className="stats-panel">
@@ -29,8 +34,12 @@ export default function StatsPanel({ gameState }) {
       {/* Resources */}
       <div className="stats-group">
         <div className="stats-section-label">Resources</div>
-        <StatRow label="Compute"  value={Math.floor(compute)}              colorClass="green" />
-        <StatRow label="Per turn" value={`+${Math.floor(computePerTurn)}`} colorClass="green" />
+        <StatRow label="Compute"     value={Math.floor(compute)}              colorClass="green" />
+        <StatRow label="Income"      value={`+${Math.floor(computePerTurn)}`} colorClass="green" />
+        {maintenanceCost > 0 && (
+          <StatRow label="Maintenance" value={`-${maintenanceCost}`}          colorClass="red" />
+        )}
+        <StatRow label="Net / turn"  value={`${netPerTurn >= 0 ? '+' : ''}${netPerTurn}`} colorClass={netPerTurn >= 0 ? 'green' : 'red'} />
       </div>
 
       {/* Capability */}

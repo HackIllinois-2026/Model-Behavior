@@ -9,6 +9,7 @@ import StatsPanel    from './components/StatsPanel'
 import WorldMap      from './components/WorldMap'
 import CardHand      from './components/CardHand'
 import NewsTicker    from './components/NewsTicker'
+import CrisisModal   from './components/CrisisModal'
 import './App.css'
 
 // ── Month display helper ────────────────────────────────────
@@ -349,6 +350,7 @@ export default function App() {
   const [recommendedCard, setRecommendedCard]   = useState(null)
   const [gameSummary, setGameSummary]           = useState(null)
   const [showEndTurnModal, setShowEndTurnModal] = useState(false)
+  const [crisisChoice, setCrisisChoice]         = useState(null) // pending caught resolution
 
   const gameDocRef = useRef('')
   const gsRef      = useRef(gs)
@@ -438,7 +440,7 @@ export default function App() {
 
       gameDocRef.current = appendPlayEvent(gameDocRef.current, card, region.label, aiResult)
 
-      dispatch({
+      const pendingDispatch = {
         type:         'APPLY_RESULT',
         cardId:       current.selectedCard,
         countryId,
@@ -451,7 +453,14 @@ export default function App() {
         caught:       aiResult.caught,
         globalEvent:  aiResult.globalEvent  ?? null,
         impact_level: aiResult.impact_level ?? null,
-      })
+      }
+
+      if (aiResult.caught) {
+        dispatch({ type: 'BEGIN_CRISIS' })
+        setCrisisChoice({ pendingDispatch, card, country: region })
+      } else {
+        dispatch(pendingDispatch)
+      }
     } catch (err) {
       console.error('AI playCard failed — applying base effects:', err)
       const baseDeltas = {
@@ -462,21 +471,40 @@ export default function App() {
         performance:    card.effects.performance     ?? 0,
         computePerTurn: card.effects.computePerTurn  ?? 0,
       }
-      dispatch({
-        type:       'APPLY_RESULT',
-        cardId:     current.selectedCard,
+      const pendingDispatch = {
+        type:        'APPLY_RESULT',
+        cardId:      current.selectedCard,
         countryId,
-        cardName:   card.name,
-        cardCost:   card.cost,
-        category:   card.category,
-        catchRisk:  card.catch_risk,
-        deltas:     baseDeltas,
-        narrative:  `${card.name} deployed in Region ${region.label}.`,
-        caught:     frontendCaught,
+        cardName:    card.name,
+        cardCost:    card.cost,
+        category:    card.category,
+        catchRisk:   card.catch_risk,
+        deltas:      baseDeltas,
+        narrative:   `${card.name} deployed in Region ${region.label}.`,
+        caught:      frontendCaught,
         globalEvent: null,
-      })
+      }
+      if (frontendCaught) {
+        dispatch({ type: 'BEGIN_CRISIS' })
+        setCrisisChoice({ pendingDispatch, card, country: region })
+      } else {
+        dispatch(pendingDispatch)
+      }
     }
   }, [])
+
+  // ── Crisis choice resolution ─────────────────────────────
+  function handleCrisisChoice(choice) {
+    if (!crisisChoice) return
+    const { pendingDispatch } = crisisChoice
+    dispatch({
+      ...pendingDispatch,
+      caught:           !choice.effects.keepUsageGains,
+      caughtRegOverride: choice.effects.regulationDelta,
+      computeDelta:      choice.effects.computeDelta,
+    })
+    setCrisisChoice(null)
+  }
 
   // ── End turn ─────────────────────────────────────────────
   const handleEndTurnRequest = useCallback(() => {
@@ -514,6 +542,7 @@ export default function App() {
     setTurnNarrative('')
     setRecommendedCard(null)
     setGameSummary(null)
+    setCrisisChoice(null)
     dispatch({ type: 'RESTART' })
   }, [])
 
@@ -581,6 +610,9 @@ export default function App() {
         event={gs.randomEvent}
         onDismiss={() => dispatch({ type: 'CLEAR_RANDOM_EVENT' })}
       />
+      {crisisChoice && (
+        <CrisisModal crisis={crisisChoice} onChoose={handleCrisisChoice} />
+      )}
     </div>
   )
 }

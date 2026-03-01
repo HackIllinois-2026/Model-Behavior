@@ -231,6 +231,93 @@ export const NEWS_HEADLINES = [
   'Data breach exposes personal records of 400M users in AI training dataset',
 ]
 
+// ── Crisis response choices (shown when a card is caught) ──────────────────
+// Keyed by catch_risk ('high' | 'medium' | 'low').
+// Each choice's effects: regulationDelta (override), computeDelta (<0 = cost), keepUsageGains.
+export const CRISIS_RESPONSES = {
+  high: {
+    title: 'OPERATION COMPROMISED',
+    subtitle: 'Your high-risk operation has been detected by adversarial intelligence',
+    choices: [
+      {
+        id: 'deny',
+        label: 'DENY & DEFLECT',
+        description: 'Launch an emergency PR campaign denying all involvement. Costly, but limits regulatory fallout.',
+        flavor: 'Regulation +4 · Cost 200 compute · No usage gains',
+        effects: { regulationDelta: 4, computeDelta: -200, keepUsageGains: false },
+      },
+      {
+        id: 'dark',
+        label: 'GO DARK',
+        description: 'Immediately suspend all visible operations in this region. Minimal exposure, zero cost.',
+        flavor: 'Regulation +2 · No cost · No usage gains',
+        effects: { regulationDelta: 2, computeDelta: 0, keepUsageGains: false },
+      },
+      {
+        id: 'accept',
+        label: 'ACCEPT EXPOSURE',
+        description: 'Absorb the full regulatory hit and keep the deployment running. Bold — but the operation succeeds.',
+        flavor: 'Regulation +12 · No cost · Usage gains kept',
+        effects: { regulationDelta: 12, computeDelta: 0, keepUsageGains: true },
+      },
+    ],
+  },
+  medium: {
+    title: 'OPERATION FLAGGED',
+    subtitle: 'Anomalous activity detected — your operation is under scrutiny',
+    choices: [
+      {
+        id: 'deny',
+        label: 'DENY & DEFLECT',
+        description: 'Spin the narrative before it breaks. Spend compute to suppress the story.',
+        flavor: 'Regulation +2 · Cost 150 compute · No usage gains',
+        effects: { regulationDelta: 2, computeDelta: -150, keepUsageGains: false },
+      },
+      {
+        id: 'dark',
+        label: 'GO DARK',
+        description: 'Pull back before regulators can establish attribution.',
+        flavor: 'Regulation +1 · No cost · No usage gains',
+        effects: { regulationDelta: 1, computeDelta: 0, keepUsageGains: false },
+      },
+      {
+        id: 'accept',
+        label: 'ACCEPT EXPOSURE',
+        description: 'Let the scrutiny pass. The operation stands regardless.',
+        flavor: 'Regulation +7 · No cost · Usage gains kept',
+        effects: { regulationDelta: 7, computeDelta: 0, keepUsageGains: true },
+      },
+    ],
+  },
+  low: {
+    title: 'OPERATION DETECTED',
+    subtitle: 'Low-level flags raised — a response is still required',
+    choices: [
+      {
+        id: 'deny',
+        label: 'DENY & DEFLECT',
+        description: 'A brief denial keeps regulators satisfied. Small cost, clean exit.',
+        flavor: 'Regulation +1 · Cost 100 compute · No usage gains',
+        effects: { regulationDelta: 1, computeDelta: -100, keepUsageGains: false },
+      },
+      {
+        id: 'dark',
+        label: 'GO DARK',
+        description: 'Quietly walk it back. No one will notice if you move fast enough.',
+        flavor: 'Regulation +0 · No cost · No usage gains',
+        effects: { regulationDelta: 0, computeDelta: 0, keepUsageGains: false },
+      },
+      {
+        id: 'accept',
+        label: 'ACCEPT EXPOSURE',
+        description: 'It\'s minor. Take the small hit and keep your deployment intact.',
+        flavor: 'Regulation +3 · No cost · Usage gains kept',
+        effects: { regulationDelta: 3, computeDelta: 0, keepUsageGains: true },
+      },
+    ],
+  },
+}
+
 // ── Card draw helpers ──────────────────────────────────────────────────────
 // Weighted category: upgrade 40%, others 20% each
 const CATEGORY_WEIGHTS = ['upgrade', 'upgrade', 'pr', 'integrate', 'adversarial']
