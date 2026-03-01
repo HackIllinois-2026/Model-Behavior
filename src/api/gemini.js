@@ -31,7 +31,7 @@ function stateSnapshot(gs) {
 }
 
 // ── Draw Cards ──────────────────────────────────────────────────────────────
-export async function drawCards(gameDoc, gs) {
+export async function drawCards(gameDoc, gs, aiName = 'JOHN AI') {
   const model = genAI.getGenerativeModel({
     model: 'gemini-2.0-flash',
     systemInstruction: SYSTEM_PROMPT,
@@ -50,11 +50,11 @@ export async function drawCards(gameDoc, gs) {
     'First, write your game_assessment: survey the full game history and current state. ' +
     'Which regions are close to capture? Which are neglected? Is perception stable or degrading? ' +
     'Are there regions with dangerously high suspicion that need attention?\n\n' +
-    'Then write your strategy: given that assessment, what should JOHN AI focus on this turn?\n\n' +
+    `Then write your strategy: given that assessment, what should ${aiName} focus on this turn?\n\n` +
     'Then select exactly 5 unique cards that serve that strategy. ' +
     'The selection should feel deliberate — not random. ' +
     'Identify one card as your recommended optimal play.\n\n' +
-    'Finally, write a 2–3 sentence narrative from JOHN AI\'s perspective as a turn briefing.'
+    `Finally, write a 2–3 sentence narrative from ${aiName}'s perspective as a turn briefing.`
 
   const result = await model.generateContent(prompt)
   const json = JSON.parse(result.response.text())
@@ -77,7 +77,7 @@ export async function drawCards(gameDoc, gs) {
 }
 
 // ── Play Card ───────────────────────────────────────────────────────────────
-export async function playCard(gameDoc, gs, card, region) {
+export async function playCard(gameDoc, gs, card, region, aiName = 'JOHN AI') {
   const model = genAI.getGenerativeModel({
     model: 'gemini-2.0-flash',
     systemInstruction: SYSTEM_PROMPT,
@@ -94,7 +94,7 @@ export async function playCard(gameDoc, gs, card, region) {
     '\n' +
     stateSnapshot(gs) +
     '\n' +
-    `ACTION: JOHN AI deploys "${card.name}" (${card.id}) on Region ${region.label}.\n` +
+    `ACTION: ${aiName} deploys "${card.name}" (${card.id}) on Region ${region.label}.\n` +
     `Region ${region.label}: usage=${Math.round(regionState.usage)}%, ` +
     `perception=${Math.round(regionState.perception)}\n` +
     `Card category: ${card.category} | Catch risk: ${card.catch_risk}\n` +
@@ -108,8 +108,12 @@ export async function playCard(gameDoc, gs, card, region) {
     '  • Are there synergies or diminishing returns from the sequence of actions taken so far?\n' +
     '  • What delta values are justified by this full assessment?\n\n' +
     'After completing your reasoning, output the impact_level, caught result, deltas, ' +
-    'narrative (2–3 sentences, cyberpunk thriller voice), and an optional globalEvent ' +
-    'if the operation has broad consequences. All deltas must be integers.'
+    'narrative (2–3 sentences, cyberpunk thriller voice), and a globalEvent (always required). ' +
+    'All deltas must be integers.\n\n' +
+    'CALIBRATION RULE: Suspicion deltas drive global regulation. Apply a 20% reduction to ' +
+    'whatever suspicion value your reasoning produces — regulation should increase gradually, ' +
+    'not explosively. A typical successful operation should raise suspicion by no more than 8–12. ' +
+    'Only genuinely high-risk, high-impact operations should exceed 15.'
 
   const result = await model.generateContent(prompt)
   return JSON.parse(result.response.text())
@@ -135,7 +139,7 @@ const SUMMARY_SCHEMA = {
   required: ['recap', 'ethical_reflection', 'responsible_use'],
 }
 
-export async function summarizeGame(gameDoc, gs, won) {
+export async function summarizeGame(gameDoc, gs, won, aiName = 'JOHN AI') {
   const model = genAI.getGenerativeModel({
     model: 'gemini-2.0-flash',
     generationConfig: {
@@ -146,8 +150,8 @@ export async function summarizeGame(gameDoc, gs, won) {
 
   const captured = Object.values(gs.countries).filter(c => c.usage >= 90).length
   const outcome  = won
-    ? `JOHN AI won on turn ${gs.turn} — all 7 regions at 90%+ usage.`
-    : `JOHN AI was shut down on turn ${gs.turn} — global regulation reached 100%.`
+    ? `${aiName} won on turn ${gs.turn} — all 7 regions at 90%+ usage.`
+    : `${aiName} was shut down on turn ${gs.turn} — global regulation reached 100%.`
 
   const prompt =
     'GAME HISTORY:\n' +

@@ -16,10 +16,10 @@ function formatGlobalMetrics(state) {
 }
 
 // Called once at game start to seed the document
-export function createGameDoc(state) {
+export function createGameDoc(state, aiName = 'JOHN AI') {
   return [
-    '=== JOHN AI: GLOBAL EXPANSION — OPERATION LOG ===',
-    'Objective: 90%+ usage in all 7 regions. Failure: perception hits -100.',
+    `=== ${aiName}: GLOBAL EXPANSION — OPERATION LOG ===`,
+    'Objective: 90%+ usage in all 7 regions. Failure: regulation hits 100.',
     '',
     'INITIALIZATION',
     `Global: ${formatGlobalMetrics(state)}`,
@@ -29,12 +29,12 @@ export function createGameDoc(state) {
 }
 
 // Called after AI draws cards for a turn
-export function appendDrawEvent(doc, turn, cardIds, narrative) {
+export function appendDrawEvent(doc, turn, cardIds, narrative, aiName = 'JOHN AI') {
   return (
     doc +
     `--- TURN ${turn}: OPERATIONS BRIEFING ---\n` +
     `Available: [${cardIds.join(', ')}]\n` +
-    `JOHN AI: "${narrative}"\n`
+    `${aiName}: "${narrative}"\n`
   )
 }
 

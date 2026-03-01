@@ -59,25 +59,35 @@ export default function StatsPanel({ gameState }) {
             {actionLog.map((entry, i) => {
               const regSign  = entry.regulationDelta > 0 ? '+' : ''
               const usagSign = entry.usageDelta > 0 ? '+' : ''
+              // Show turn partition when the turn number changes between entries
+              const prevEntry = actionLog[i - 1]
+              const showPartition = prevEntry && prevEntry.turn !== entry.turn
               return (
-                <div key={i} className={`al-entry ${entry.caught ? 'al-caught' : ''}`}>
-                  <div className="al-top">
-                    <span className="al-turn">T{entry.turn}</span>
-                    <span className="al-card">{entry.cardName}</span>
-                    {entry.caught && <span className="al-flag">⚠</span>}
-                  </div>
-                  <div className="al-deltas">
-                    {entry.countryLabel && (
-                      <span className="al-region">R{entry.countryLabel}</span>
-                    )}
-                    {entry.usageDelta !== 0 && (
-                      <span className={`al-d ${entry.usageDelta > 0 ? 'al-pos' : 'al-neg'}`}>
-                        Use {usagSign}{entry.usageDelta}
+                <div key={i}>
+                  {showPartition && (
+                    <div className="al-turn-divider">
+                      <span className="al-turn-divider-label">Turn {entry.turn}</span>
+                    </div>
+                  )}
+                  <div className={`al-entry ${entry.caught ? 'al-caught' : ''}`}>
+                    <div className="al-top">
+                      <span className="al-turn">T{entry.turn}</span>
+                      <span className="al-card">{entry.cardName}</span>
+                      {entry.caught && <span className="al-flag">⚠</span>}
+                    </div>
+                    <div className="al-deltas">
+                      {entry.countryLabel && (
+                        <span className="al-region">R{entry.countryLabel}</span>
+                      )}
+                      {entry.usageDelta !== 0 && (
+                        <span className={`al-d ${entry.usageDelta > 0 ? 'al-pos' : 'al-neg'}`}>
+                          Use {usagSign}{entry.usageDelta}
+                        </span>
+                      )}
+                      <span className={`al-d ${entry.regulationDelta < 0 ? 'al-pos' : 'al-neg'}`}>
+                        Reg {regSign}{entry.regulationDelta}
                       </span>
-                    )}
-                    <span className={`al-d ${entry.regulationDelta < 0 ? 'al-pos' : 'al-neg'}`}>
-                      Reg {regSign}{entry.regulationDelta}
-                    </span>
+                    </div>
                   </div>
                 </div>
               )

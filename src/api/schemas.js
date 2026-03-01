@@ -119,14 +119,14 @@ export const PLAY_CARD_SCHEMA = {
         'Reference real-world AI concepts for educational value.',
     },
 
-    // Optional: a broader world consequence
+    // Global ripple effect — always present
     globalEvent: {
       type: 'string',
       description:
-        'Optional: a 1-sentence global ripple effect triggered by this operation ' +
-        '(e.g. new legislation proposed, rival AI responds, media cycle shifts). ' +
-        'Only include if the action is significant enough to warrant it.',
+        'A 1-sentence global ripple effect from this operation. Always include one — ' +
+        'e.g. new legislation proposed, rival AI responds, media cycle shifts, public backlash, ' +
+        'international reaction. Make it feel consequential and thematically grounded.',
     },
   },
-  required: ['reasoning', 'impact_level', 'caught', 'deltas', 'narrative'],
+  required: ['reasoning', 'impact_level', 'caught', 'deltas', 'narrative', 'globalEvent'],
 }

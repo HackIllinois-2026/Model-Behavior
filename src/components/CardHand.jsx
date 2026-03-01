@@ -1,7 +1,10 @@
+import { useState, useEffect, useRef } from 'react'
 import { CARDS, COUNTRIES, CATEGORY_META } from '../gameData'
 import CARD_IMAGES from '../cardImages'
 
-function CardItem({ card, isSelected, isRecommended, canAfford, onClick, onRightClick }) {
+const REFRESH_COST = 400
+
+function CardItem({ card, isSelected, isRecommended, canAfford, isNew, onClick, onRightClick }) {
   const catColor = CATEGORY_META[card.category]?.color ?? '#888'
 
   return (
@@ -11,6 +14,7 @@ function CardItem({ card, isSelected, isRecommended, canAfford, onClick, onRight
         isSelected    ? 'selected'    : '',
         isRecommended ? 'recommended' : '',
         !canAfford    ? 'cant-afford' : '',
+        isNew         ? 'card-slide-in' : '',
       ].filter(Boolean).join(' ')}
       style={{ '--cat-color': catColor }}
       onClick={canAfford ? onClick : undefined}
@@ -18,6 +22,7 @@ function CardItem({ card, isSelected, isRecommended, canAfford, onClick, onRight
       title={card.name}
     >
       {isRecommended && <div className="card-recommend-badge">★ OPTIMAL</div>}
+      <div className="card-cost-badge">{card.cost} ⚡</div>
       <img
         src={CARD_IMAGES[card.imgKey]}
         alt={card.name}
@@ -82,9 +87,25 @@ function RegionPanel({ countries, selectedCountry }) {
   )
 }
 
-export default function CardHand({ dealtCards, selectedCard, recommendedCard, compute, phase, onCardClick, onCardRightClick, onSkipTurn, countries, selectedCountry }) {
-  const isTargeting = phase === 'select-country'
-  const selectedCardObj = selectedCard ? CARDS.find(c => c.id === selectedCard) : null
+export default function CardHand({ dealtCards, selectedCard, recommendedCard, compute, phase, onCardClick, onCardRightClick, onEndTurn, onRefreshHand, countries, selectedCountry }) {
+  const isTargeting      = phase === 'select-country'
+  const selectedCardObj  = selectedCard ? CARDS.find(c => c.id === selectedCard) : null
+  const canRefresh       = compute >= REFRESH_COST && !isTargeting
+
+  // Track newly added cards for slide-in animation
+  const [newCardIds, setNewCardIds]   = useState(new Set())
+  const prevDealtRef                  = useRef(dealtCards)
+
+  useEffect(() => {
+    const prev    = new Set(prevDealtRef.current)
+    const newOnes = dealtCards.filter(id => !prev.has(id))
+    if (newOnes.length > 0) {
+      setNewCardIds(new Set(newOnes))
+      const t = setTimeout(() => setNewCardIds(new Set()), 550)
+      return () => clearTimeout(t)
+    }
+    prevDealtRef.current = dealtCards
+  }, [dealtCards])
 
   return (
     <div className="card-hand-section">
@@ -100,11 +121,20 @@ export default function CardHand({ dealtCards, selectedCard, recommendedCard, co
         ) : (
           <>
             <div className="ci-idle-title">YOUR HAND</div>
-            <div className="ci-hint">Left-click to play a card</div>
+            <div className="ci-hint">Left-click to play</div>
             <div className="ci-hint">Right-click to inspect</div>
-            {onSkipTurn && (
-              <button className="skip-turn-btn" onClick={onSkipTurn}>
-                SKIP TURN
+            {onRefreshHand && (
+              <button
+                className={`refresh-hand-btn ${!canRefresh ? 'cant-afford-btn' : ''}`}
+                onClick={canRefresh ? onRefreshHand : undefined}
+                title={`Costs ${REFRESH_COST} compute`}
+              >
+                ↺ REFRESH ({REFRESH_COST})
+              </button>
+            )}
+            {onEndTurn && (
+              <button className="skip-turn-btn" onClick={onEndTurn}>
+                END TURN
               </button>
             )}
           </>
@@ -123,6 +153,7 @@ export default function CardHand({ dealtCards, selectedCard, recommendedCard, co
               isSelected={selectedCard === cardId}
               isRecommended={recommendedCard === cardId}
               canAfford={compute >= card.cost}
+              isNew={newCardIds.has(cardId)}
               onClick={() => onCardClick(cardId)}
               onRightClick={e => { e.preventDefault(); onCardRightClick(cardId) }}
             />

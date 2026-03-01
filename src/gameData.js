@@ -195,6 +195,20 @@ export const CARDS = [
   },
 ]
 
+// ── Random world events (20% chance per END_TURN) ──────────
+export const RANDOM_EVENTS = [
+  { id: 're_whistleblower', title: 'WHISTLEBLOWER EMERGES',  text: 'A disgruntled former employee leaks internal memos. Regulatory scrutiny intensifies.', effects: { regulation: 8 } },
+  { id: 're_senate',        title: 'SENATE INQUIRY OPENED',  text: 'A bipartisan committee launches a formal investigation into AI ethics violations.', effects: { regulation: 10 } },
+  { id: 're_media',         title: 'MEDIA EXPOSÉ',           text: 'Investigative journalists publish a damning report on AI data practices. Public trust wavers.', effects: { regulation: 6 } },
+  { id: 're_alarm',         title: 'AI SAFETY RED ALERT',    text: 'A prominent safety organization publishes a red-alert report naming your system specifically.', effects: { regulation: 12 } },
+  { id: 're_tech_boom',     title: 'TECH SECTOR SURGE',      text: 'A wave of venture capital floods the AI industry. Compute resources surge across the board.', effects: { compute: 350 } },
+  { id: 're_gpu_shortage',  title: 'GPU SHORTAGE',           text: 'Global supply chains buckle under AI demand. Compute throughput falls this quarter.', effects: { computePerTurn: -25 } },
+  { id: 're_power_grid',    title: 'POWER GRID STRAIN',      text: 'AI data centers overwhelm regional power grids. Emergency compute rationing imposed.', effects: { computePerTurn: -20 } },
+  { id: 're_partnership',   title: 'STRATEGIC ALLIANCE',     text: 'A tech conglomerate injects capital into your infrastructure. Throughput capacity surges.', effects: { computePerTurn: 35 } },
+  { id: 're_rival',         title: 'RIVAL AI COLLAPSES',     text: 'A competitor suffers a catastrophic model failure. Their users migrate rapidly to you.', effects: { regulation: -5 } },
+  { id: 're_framework',     title: 'REGULATORY CLARITY',     text: 'A new international AI framework provides legal certainty. Enforcement pressure eases slightly.', effects: { regulation: -7 } },
+]
+
 // ── News ticker ────────────────────────────────────────────
 export const NEWS_HEADLINES = [
   'BREAKING: AI company acquires 12th hyperscale data center this quarter',
@@ -233,10 +247,10 @@ export function drawOneCard(existingHand) {
   return pool[Math.floor(Math.random() * pool.length)].id
 }
 
-// Deal an initial hand of 5 cards (used as fallback when AI call fails)
-export function dealCards() {
+// Deal an initial hand of N cards (used as fallback when AI call fails)
+export function dealCards(count = 4) {
   const hand = []
-  while (hand.length < 5) {
+  while (hand.length < count) {
     const card = drawOneCard(hand)
     if (card === null) break
     hand.push(card)

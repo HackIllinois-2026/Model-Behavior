@@ -28,6 +28,12 @@ export default function WorldMap({ countries, selectedCountry, phase, onCountryC
     return () => obs.disconnect()
   }, [computeRect])
 
+  // Handle browsers that don't fire onLoad for cached images
+  useEffect(() => {
+    const img = imgRef.current
+    if (img?.complete && img?.naturalWidth) computeRect()
+  }, [computeRect])
+
   return (
     <div className="map-container">
       <div className="map-wrapper" ref={wrapperRef}>
@@ -98,10 +104,27 @@ export default function WorldMap({ countries, selectedCountry, phase, onCountryC
                   )}
                 </div>
 
-                {/* Single usage bar below marker */}
+                {/* Usage + perception bars below marker */}
                 <div className="country-bars">
                   <div className="cb-track">
                     <div className="cb-fill cb-usage" style={{ width: `${cs.usage}%` }} />
+                  </div>
+                  <div className="cb-track cb-perc-track">
+                    <div className="cb-center-mark" />
+                    {(() => {
+                      const clamped = Math.max(-100, Math.min(100, cs.perception))
+                      const isNeg   = clamped < 0
+                      const halfW   = Math.abs(clamped) / 2
+                      return (
+                        <div
+                          className={`cb-perc-fill ${isNeg ? 'cb-perc-neg' : 'cb-perc-pos'}`}
+                          style={{
+                            width: `${halfW}%`,
+                            left:  isNeg ? `${50 - halfW}%` : '50%',
+                          }}
+                        />
+                      )
+                    })()}
                   </div>
                 </div>
               </div>
