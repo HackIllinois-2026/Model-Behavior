@@ -25,7 +25,7 @@ Beyond the gameplay, Model Behavior is a teaching tool. It illustrates the possi
 ## How It Was Built
 
 Model Behavior is built with React and deployed as a browser-based application. The game currently uses the Gemini API for AI-driven features, though it is architected to run fully offline as well.
-
+This current repository holds our database backed for our game, allowing it to make real-time news updates and respond to players actions: https://github.com/HackIllinois-2026/Actian-Vector-Database-Implementation
 ---
 
 ## Challenges
