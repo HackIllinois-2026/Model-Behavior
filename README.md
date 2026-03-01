@@ -66,7 +66,7 @@ The AI climate is rapidly evolving, and so is Model Behavior. Planned features i
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/model-behavior.git
+git clone https://github.com/HackIllinois-2026/Model-Behavior.git
 cd model-behavior
 
 # Install dependencies
@@ -83,6 +83,7 @@ VITE_GEMINI_API_KEY=your_api_key_here
 ```
 
 ---
+This project was built using Claude Code, React, Gemini API, and various stock images sourced from the web. A link to all these images are below.
 
 ## Built At
 
