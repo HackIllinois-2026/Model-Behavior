@@ -20,37 +20,8 @@ function StatRow({ label, value, colorClass }) {
   )
 }
 
-// Centered perception bar: -100 (red) ← 0 → +100 (green)
-function PerceptionMiniBar({ value }) {
-  const clamped  = Math.max(-100, Math.min(100, value))
-  const isNeg    = clamped < 0
-  const halfW    = Math.abs(clamped) / 2 // 0–50% from center
-  const fillStyle = {
-    position: 'absolute',
-    top: 0,
-    height: '100%',
-    width: `${halfW}%`,
-    left: isNeg ? `${50 - halfW}%` : '50%',
-    background: isNeg
-      ? 'linear-gradient(90deg, #ef4444, #b91c1c)'
-      : 'linear-gradient(90deg, #22c55e, #16a34a)',
-    borderRadius: '2px',
-    transition: 'all 0.4s ease',
-  }
-  return (
-    <div className="mini-bar-track" style={{ position: 'relative' }}>
-      <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 1, background: '#1e3050', zIndex: 1 }} />
-      <div style={fillStyle} />
-    </div>
-  )
-}
-
 export default function StatsPanel({ gameState }) {
-  const { compute, computePerTurn, performance, globalUsage, regulation, countries, selectedCountry } = gameState
-  const region     = COUNTRIES.find(c => c.id === selectedCountry)
-  const regionData = selectedCountry ? countries[selectedCountry] : null
-
-  const regColor = regulation > 66 ? 'red' : regulation > 33 ? 'warn' : 'green'
+  const { compute, computePerTurn, performance, globalUsage, actionLog } = gameState
 
   return (
     <aside className="stats-panel">
@@ -78,39 +49,40 @@ export default function StatsPanel({ gameState }) {
         <MiniBar value={globalUsage} colorClass="bar-green" />
       </div>
 
-      {/* Regulation */}
-      <div className="stats-group">
-        <div className="stats-section-label">Threat Level</div>
-        <div className="stat-row">
-          <span className="stat-label">Regulation</span>
-          <span className={`stat-value ${regColor}`}>{Math.round(regulation)}%</span>
-        </div>
-        <MiniBar value={regulation} colorClass={regulation > 66 ? 'bar-red' : regulation > 33 ? 'bar-warn' : 'bar-green'} />
-      </div>
-
-      {/* Selected region */}
-      <div className="stats-group">
-        <div className="stats-section-label">Selected Region</div>
-        {regionData ? (
-          <div className="region-detail">
-            <div className="region-detail-title">Region {region.label}</div>
-
-            <div className="region-stat-label">
-              <span>Usage</span>
-              <span className="usage-col">{Math.round(regionData.usage)}%</span>
-            </div>
-            <MiniBar value={regionData.usage} colorClass="bar-green" />
-
-            <div className="region-stat-label" style={{ marginTop: 6 }}>
-              <span>Influence</span>
-              <span className={regionData.perception >= 0 ? 'usage-col' : 'susp-col'}>
-                {regionData.perception > 0 ? '+' : ''}{Math.round(regionData.perception)}
-              </span>
-            </div>
-            <PerceptionMiniBar value={regionData.perception} />
-          </div>
+      {/* Action history */}
+      <div className="stats-group stats-group-history">
+        <div className="stats-section-label">Action Log</div>
+        {(!actionLog || actionLog.length === 0) ? (
+          <div className="no-selection">No actions yet</div>
         ) : (
-          <div className="no-selection">Click a region on the map</div>
+          <div className="action-log">
+            {actionLog.map((entry, i) => {
+              const regSign  = entry.regulationDelta > 0 ? '+' : ''
+              const usagSign = entry.usageDelta > 0 ? '+' : ''
+              return (
+                <div key={i} className={`al-entry ${entry.caught ? 'al-caught' : ''}`}>
+                  <div className="al-top">
+                    <span className="al-turn">T{entry.turn}</span>
+                    <span className="al-card">{entry.cardName}</span>
+                    {entry.caught && <span className="al-flag">⚠</span>}
+                  </div>
+                  <div className="al-deltas">
+                    {entry.countryLabel && (
+                      <span className="al-region">R{entry.countryLabel}</span>
+                    )}
+                    {entry.usageDelta !== 0 && (
+                      <span className={`al-d ${entry.usageDelta > 0 ? 'al-pos' : 'al-neg'}`}>
+                        Use {usagSign}{entry.usageDelta}
+                      </span>
+                    )}
+                    <span className={`al-d ${entry.regulationDelta < 0 ? 'al-pos' : 'al-neg'}`}>
+                      Reg {regSign}{entry.regulationDelta}
+                    </span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         )}
       </div>
 

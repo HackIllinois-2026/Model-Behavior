@@ -1,4 +1,4 @@
-import { CARDS, CATEGORY_META } from '../gameData'
+import { CARDS, COUNTRIES, CATEGORY_META } from '../gameData'
 import CARD_IMAGES from '../cardImages'
 
 function CardItem({ card, isSelected, isRecommended, canAfford, onClick, onRightClick }) {
@@ -28,13 +28,67 @@ function CardItem({ card, isSelected, isRecommended, canAfford, onClick, onRight
   )
 }
 
-export default function CardHand({ dealtCards, selectedCard, recommendedCard, compute, phase, onCardClick, onCardRightClick }) {
+// ── Region stats panel (right side of card row) ────────────
+function RegionPanel({ countries, selectedCountry }) {
+  const regionMeta = COUNTRIES.find(c => c.id === selectedCountry)
+  const regionData = selectedCountry ? countries?.[selectedCountry] : null
+
+  if (!regionData || !regionMeta) {
+    return (
+      <div className="region-panel">
+        <div className="rp-idle">Click a region<br />on the map</div>
+      </div>
+    )
+  }
+
+  const percColor = regionData.perception >= 0 ? '#22c55e' : '#ef4444'
+
+  return (
+    <div className="region-panel">
+      <div className="rp-title">Region {regionMeta.label}</div>
+
+      <div className="rp-row">
+        <span className="rp-label">Usage</span>
+        <span className="rp-value" style={{ color: '#22c55e' }}>{Math.round(regionData.usage)}%</span>
+      </div>
+      <div className="rp-bar-track">
+        <div className="rp-bar-fill" style={{ width: `${regionData.usage}%`, background: '#22c55e' }} />
+      </div>
+
+      <div className="rp-row" style={{ marginTop: 6 }}>
+        <span className="rp-label">Perception</span>
+        <span className="rp-value" style={{ color: percColor }}>
+          {regionData.perception > 0 ? '+' : ''}{Math.round(regionData.perception)}
+        </span>
+      </div>
+      <div className="rp-bar-track" style={{ position: 'relative' }}>
+        <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 1, background: '#1e3050' }} />
+        {(() => {
+          const clamped = Math.max(-100, Math.min(100, regionData.perception))
+          const isNeg   = clamped < 0
+          const halfW   = Math.abs(clamped) / 2
+          return (
+            <div style={{
+              position: 'absolute', top: 0, height: '100%',
+              width: `${halfW}%`,
+              left: isNeg ? `${50 - halfW}%` : '50%',
+              background: isNeg ? '#ef4444' : '#22c55e',
+              borderRadius: 2,
+            }} />
+          )
+        })()}
+      </div>
+    </div>
+  )
+}
+
+export default function CardHand({ dealtCards, selectedCard, recommendedCard, compute, phase, onCardClick, onCardRightClick, onSkipTurn, countries, selectedCountry }) {
   const isTargeting = phase === 'select-country'
   const selectedCardObj = selectedCard ? CARDS.find(c => c.id === selectedCard) : null
 
   return (
     <div className="card-hand-section">
-      {/* Info panel to the left of the cards */}
+      {/* Info panel — left side */}
       <div className="card-info-panel">
         {isTargeting && selectedCardObj ? (
           <>
@@ -48,6 +102,11 @@ export default function CardHand({ dealtCards, selectedCard, recommendedCard, co
             <div className="ci-idle-title">YOUR HAND</div>
             <div className="ci-hint">Left-click to play a card</div>
             <div className="ci-hint">Right-click to inspect</div>
+            {onSkipTurn && (
+              <button className="skip-turn-btn" onClick={onSkipTurn}>
+                SKIP TURN
+              </button>
+            )}
           </>
         )}
       </div>
@@ -70,6 +129,9 @@ export default function CardHand({ dealtCards, selectedCard, recommendedCard, co
           )
         })}
       </div>
+
+      {/* Region stats panel — right side */}
+      <RegionPanel countries={countries} selectedCountry={selectedCountry} />
     </div>
   )
 }

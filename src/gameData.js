@@ -1,13 +1,13 @@
 // ── Countries ─────────────────────────────────────────────
 // 7 numbered regions on the alien planet map
 export const COUNTRIES = [
-  { id: 'c1', label: '1', x: 20, y: 28 },
-  { id: 'c2', label: '2', x: 32, y: 56 },
-  { id: 'c3', label: '3', x: 47, y: 22 },
-  { id: 'c4', label: '4', x: 55, y: 50 },
-  { id: 'c5', label: '5', x: 69, y: 27 },
-  { id: 'c6', label: '6', x: 78, y: 53 },
-  { id: 'c7', label: '7', x: 62, y: 68 },
+  { id: 'c1', label: '1', x: 13, y: 20 },
+  { id: 'c2', label: '2', x: 11, y: 62 },
+  { id: 'c3', label: '3', x: 35, y: 20 },
+  { id: 'c4', label: '4', x: 50, y: 42 },
+  { id: 'c5', label: '5', x: 72, y: 18 },
+  { id: 'c6', label: '6', x: 84, y: 47 },
+  { id: 'c7', label: '7', x: 60, y: 70 },
 ]
 
 // ── Card categories ────────────────────────────────────────
@@ -217,8 +217,29 @@ export const NEWS_HEADLINES = [
   'Data breach exposes personal records of 400M users in AI training dataset',
 ]
 
-// ── Fallback card deal (used when AI call fails) ───────────────────────────
+// ── Card draw helpers ──────────────────────────────────────────────────────
+// Weighted category: upgrade 40%, others 20% each
+const CATEGORY_WEIGHTS = ['upgrade', 'upgrade', 'pr', 'integrate', 'adversarial']
+
+// Draw one card: pick a weighted category first, then a random card from that category
+export function drawOneCard(existingHand) {
+  const cat  = CATEGORY_WEIGHTS[Math.floor(Math.random() * CATEGORY_WEIGHTS.length)]
+  const pool = CARDS.filter(c => c.category === cat && !existingHand.includes(c.id))
+  if (pool.length === 0) {
+    const any = CARDS.filter(c => !existingHand.includes(c.id))
+    if (any.length === 0) return null
+    return any[Math.floor(Math.random() * any.length)].id
+  }
+  return pool[Math.floor(Math.random() * pool.length)].id
+}
+
+// Deal an initial hand of 5 cards (used as fallback when AI call fails)
 export function dealCards() {
-  const shuffled = [...CARDS].sort(() => Math.random() - 0.5)
-  return shuffled.slice(0, 5).map(c => c.id)
+  const hand = []
+  while (hand.length < 5) {
+    const card = drawOneCard(hand)
+    if (card === null) break
+    hand.push(card)
+  }
+  return hand
 }

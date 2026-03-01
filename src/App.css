@@ -423,6 +423,24 @@ html, body, #root {
   opacity: 0.7;
 }
 
+.skip-turn-btn {
+  margin-top: 10px;
+  padding: 5px 10px;
+  background: transparent;
+  border: 1px solid var(--text-muted);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: border-color 0.2s, color 0.2s;
+}
+.skip-turn-btn:hover {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+
 .ci-targeting-label {
   font-family: var(--font-head);
   font-size: 0.58rem;
@@ -872,7 +890,10 @@ html, body, #root {
   background: #080f22;
   border-radius: 8px;
   padding: 40px 48px;
-  max-width: 480px;
+  max-width: 580px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
   text-align: center;
   animation: toast-in 0.4s ease;
 }
@@ -917,6 +938,183 @@ html, body, #root {
   background: var(--accent);
   color: #000;
   box-shadow: 0 0 20px var(--accent);
+}
+
+/* ── Overlay summary ─────────────────────────────────────── */
+.overlay-summary-loading {
+  margin: 0 0 24px;
+}
+
+.overlay-summary {
+  text-align: left;
+  margin: 0 0 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sum-section {
+  background: rgba(255,255,255,0.04);
+  border-radius: 5px;
+  padding: 12px 14px;
+  border-left: 2px solid var(--border);
+}
+
+.sum-section-highlight {
+  border-left-color: var(--accent);
+}
+
+.sum-label {
+  font-family: var(--font-head);
+  font-size: 0.52rem;
+  letter-spacing: 0.18em;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.sum-text {
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+/* ── Action log (sidebar) ────────────────────────────────── */
+.stats-group-history {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.action-log {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.al-entry {
+  background: rgba(255,255,255,0.03);
+  border-radius: 3px;
+  padding: 5px 7px;
+  border-left: 2px solid var(--border);
+}
+
+.al-entry.al-caught {
+  border-left-color: var(--danger);
+}
+
+.al-top {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 2px;
+}
+
+.al-turn {
+  font-family: var(--font-head);
+  font-size: 0.5rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.al-card {
+  font-size: 0.58rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.al-flag {
+  font-size: 0.58rem;
+  color: var(--danger);
+}
+
+.al-deltas {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.al-region {
+  font-family: var(--font-head);
+  font-size: 0.5rem;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.07);
+  border-radius: 2px;
+  padding: 1px 4px;
+}
+
+.al-d {
+  font-family: var(--font-head);
+  font-size: 0.5rem;
+  border-radius: 2px;
+  padding: 1px 4px;
+}
+
+.al-pos { color: #22c55e; background: rgba(34,197,94,0.1); }
+.al-neg { color: #ef4444; background: rgba(239,68,68,0.1); }
+
+/* ── Region panel (right side of card row) ───────────────── */
+.region-panel {
+  width: 155px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--border);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+
+.rp-idle {
+  font-size: 0.58rem;
+  color: var(--text-muted);
+  opacity: 0.6;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.rp-title {
+  font-family: var(--font-head);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.rp-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rp-label {
+  font-size: 0.58rem;
+  color: var(--text-muted);
+}
+
+.rp-value {
+  font-family: var(--font-head);
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.rp-bar-track {
+  height: 4px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.rp-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
 }
 
 /* ── Scrollbar ───────────────────────────────────────────── */

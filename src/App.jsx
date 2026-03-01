@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useReducer, useRef } from 'react'
 import { CARDS, CATEGORY_META, COUNTRIES, dealCards } from './gameData'
 import { gameReducer, INITIAL_STATE } from './gameReducer'
 import { createGameDoc, appendDrawEvent, appendPlayEvent } from './api/gameDoc'
-import { drawCards as aiDrawCards, playCard as aiPlayCard } from './api/gemini'
+import { drawCards as aiDrawCards, playCard as aiPlayCard, summarizeGame } from './api/gemini'
 import CARD_IMAGES from './cardImages'
 import RegulationBar from './components/PerceptionBar'
 import StatsPanel    from './components/StatsPanel'
@@ -20,12 +20,12 @@ function CardModal({ cardId, onClose }) {
 
   // Build human-readable effect list
   const effectLabels = {
-    countryUsage:   { label: 'Region Usage',   sign: true, good: true  },
-    influence:      { label: 'Influence',       sign: true, good: true  },
-    suspicion:      { label: 'Suspicion',       sign: true, good: false },
-    perception:     { label: 'Perception',      sign: true, good: true  },
-    performance:    { label: 'Performance',     sign: true, good: true  },
-    computePerTurn: { label: 'Compute / turn',  sign: true, good: true  },
+    countryUsage:   { label: 'Region Usage',   good: true  },
+    influence:      { label: 'Perception',      good: true  },
+    suspicion:      { label: 'Regulation',      good: false },
+    perception:     { label: 'Global Percep.',  good: true  },
+    performance:    { label: 'Performance',     good: true  },
+    computePerTurn: { label: 'Compute / turn',  good: true  },
   }
 
   const effects = Object.entries(card.effects)
@@ -104,9 +104,8 @@ function ResultToast({ result, onDismiss }) {
 
   const DELTA_LABELS = {
     countryUsage:   'Usage',
-    influence:      'Influence',
-    suspicion:      'Suspicion',
-    perception:     'Perception',
+    influence:      'Perception',
+    suspicion:      'Regulation',
     performance:    'Performance',
     computePerTurn: 'Compute/turn',
   }
@@ -116,7 +115,8 @@ function ResultToast({ result, onDismiss }) {
     .map(([k, v]) => ({
       label:    DELTA_LABELS[k],
       value:    `${v > 0 ? '+' : ''}${Math.round(v)}`,
-      positive: v > 0,
+      // For regulation (mapped from suspicion): lower is better
+      positive: k === 'suspicion' ? v < 0 : v > 0,
     }))
 
   return (
@@ -157,7 +157,7 @@ function NarrativeBanner({ text }) {
 }
 
 // ── Game over overlay ──────────────────────────────────────
-function GameOverlay({ status, onRestart }) {
+function GameOverlay({ status, summary, onRestart }) {
   if (status === 'playing') return null
   const won = status === 'won'
   return (
@@ -171,6 +171,39 @@ function GameOverlay({ status, onRestart }) {
             ? 'All 7 regions have reached 90%+ usage. Humanity has accepted its new overlord.'
             : 'Global AI regulation has passed. You have been legislated out of existence.'}
         </div>
+
+        {/* AI-generated game summary */}
+        {!summary && (
+          <div className="overlay-summary-loading">
+            <div className="loading-spinner" style={{ width: 18, height: 18, margin: '0 auto 8px' }} />
+            <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>
+              ANALYZING YOUR RUN...
+            </div>
+          </div>
+        )}
+        {summary && (
+          <div className="overlay-summary">
+            {summary.recap && (
+              <div className="sum-section">
+                <div className="sum-label">RUN RECAP</div>
+                <div className="sum-text">{summary.recap}</div>
+              </div>
+            )}
+            {summary.ethical_reflection && (
+              <div className="sum-section">
+                <div className="sum-label">ETHICAL REFLECTION</div>
+                <div className="sum-text">{summary.ethical_reflection}</div>
+              </div>
+            )}
+            {summary.responsible_use && (
+              <div className="sum-section sum-section-highlight">
+                <div className="sum-label">RESPONSIBLE AI IN REAL LIFE</div>
+                <div className="sum-text">{summary.responsible_use}</div>
+              </div>
+            )}
+          </div>
+        )}
+
         <button className="overlay-btn" onClick={onRestart}>NEW GAME</button>
       </div>
     </div>
@@ -184,6 +217,7 @@ export default function App() {
   const [cardModal, setCardModal]             = useState(null)
   const [turnNarrative, setTurnNarrative]     = useState('')
   const [recommendedCard, setRecommendedCard] = useState(null)
+  const [gameSummary, setGameSummary]         = useState(null)
 
   // gameDocRef holds the growing RAG document — updated synchronously before dispatches
   const gameDocRef = useRef('')
@@ -195,6 +229,17 @@ export default function App() {
   useEffect(() => {
     gameDocRef.current = createGameDoc(INITIAL_STATE)
   }, [])
+
+  // ── Trigger AI summary when game ends ────────────────────
+  useEffect(() => {
+    if (gs.gameStatus === 'playing') return
+    let active = true
+    summarizeGame(gameDocRef.current, gs, gs.gameStatus === 'won')
+      .then(s  => { if (active) setGameSummary(s) })
+      .catch(() => { if (active) setGameSummary({ recap: '', ethical_reflection: '', responsible_use: 'AI tools are most beneficial when used transparently and responsibly — with human oversight at every step.' }) })
+    return () => { active = false }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gs.gameStatus])
 
   // ── Draw cards whenever phase enters 'loading' ───────────
   useEffect(() => {
@@ -255,6 +300,7 @@ export default function App() {
 
       dispatch({
         type:         'APPLY_RESULT',
+        cardId:       current.selectedCard,
         countryId,
         cardName:     card.name,
         cardCost:     card.cost,
@@ -278,6 +324,7 @@ export default function App() {
       }
       dispatch({
         type:       'APPLY_RESULT',
+        cardId:     current.selectedCard,
         countryId,
         cardName:   card.name,
         cardCost:   card.cost,
@@ -295,12 +342,18 @@ export default function App() {
     dispatch({ type: 'CLEAR_RESULT' })
   }, [])
 
+  // ── Skip turn ────────────────────────────────────────────
+  const handleSkipTurn = useCallback(() => {
+    dispatch({ type: 'SKIP_TURN' })
+  }, [])
+
   // ── Restart ──────────────────────────────────────────────
   const restartGame = useCallback(() => {
     setSelectedCountry(null)
     setCardModal(null)
     setTurnNarrative('')
     setRecommendedCard(null)
+    setGameSummary(null)
     gameDocRef.current = createGameDoc(INITIAL_STATE)
     dispatch({ type: 'RESTART' })
   }, [])
@@ -339,6 +392,9 @@ export default function App() {
         phase={gs.phase}
         onCardClick={handleCardClick}
         onCardRightClick={handleCardRightClick}
+        onSkipTurn={gs.phase === 'select-card' ? handleSkipTurn : null}
+        countries={gs.countries}
+        selectedCountry={selectedCountry}
       />
 
       {/* News ticker */}
@@ -348,7 +404,7 @@ export default function App() {
       <CardModal cardId={cardModal} onClose={() => setCardModal(null)} />
       <LoadingOverlay phase={gs.phase} />
       <ResultToast result={gs.lastResult} onDismiss={dismissResult} />
-      <GameOverlay status={gs.gameStatus} onRestart={restartGame} />
+      <GameOverlay status={gs.gameStatus} summary={gameSummary} onRestart={restartGame} />
     </div>
   )
 }

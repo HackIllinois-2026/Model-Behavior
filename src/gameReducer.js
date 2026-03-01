@@ -1,4 +1,6 @@
-import { COUNTRIES } from './gameData'
+import { COUNTRIES, drawOneCard } from './gameData'
+
+const MAX_LOG = 8
 
 function makeCountryState() {
   // Each region tracks: usage (0-100), perception (-100 to 100)
@@ -13,8 +15,8 @@ function calcGlobalUsage(countries) {
 export const INITIAL_STATE = {
   regulation: 0,      // 0 to 100 — global threat/cure bar, lose when it hits 100
   globalUsage: 0,
-  compute: 1000,
-  computePerTurn: 200,
+  compute: 600,
+  computePerTurn: 300,
   performance: 0,     // 0 to 100, global AI capability
   turn: 1,
   countries: Object.fromEntries(COUNTRIES.map(c => [c.id, makeCountryState()])),
@@ -22,6 +24,7 @@ export const INITIAL_STATE = {
   selectedCard: null,
   phase: 'loading',   // 'loading' | 'select-card' | 'select-country' | 'resolving'
   lastResult: null,
+  actionLog: [],      // recent action history [{turn, cardName, countryLabel, caught, regulationDelta, usageDelta}]
   gameStatus: 'playing', // 'playing' | 'won' | 'lost'
 }
 
@@ -34,7 +37,7 @@ export function gameReducer(state, action) {
         countries: Object.fromEntries(COUNTRIES.map(c => [c.id, makeCountryState()])),
       }
 
-    // AI has drawn cards — show them to the player
+    // AI has drawn initial cards — show them to the player
     case 'SET_DEALT_CARDS':
       return {
         ...state,
@@ -62,13 +65,13 @@ export function gameReducer(state, action) {
     // AI deltas use: countryUsage, influence, suspicion, perception, performance, computePerTurn
     // We map these to HEAD stat types: per-region (usage, perception), global (regulation, performance, computePerTurn)
     case 'APPLY_RESULT': {
-      const { countryId, cardName, cardCost, category, deltas, narrative, caught, globalEvent, impact_level } = action
+      const { cardId, countryId, cardName, cardCost, category, deltas, narrative, caught, globalEvent, impact_level } = action
 
       const prev = state.countries[countryId]
       const updatedCountry = {
         // countryUsage → per-region usage (direct)
         usage:      Math.min(100, Math.max(0, prev.usage      + Math.round(deltas.countryUsage ?? 0))),
-        // influence → per-region perception (local trust/influence = local perception)
+        // influence → per-region perception (local influence = local public perception)
         perception: Math.min(100, Math.max(-100, prev.perception + Math.round(deltas.influence ?? 0))),
       }
       const newCountries = { ...state.countries, [countryId]: updatedCountry }
@@ -79,15 +82,14 @@ export function gameReducer(state, action) {
       const newGlobalUsage    = calcGlobalUsage(newCountries)
 
       // Regulation: suspicion raises it, positive perception lowers it
-      // suspicion → direct regulation increase (regional scrutiny = global pressure)
-      // perception → inverse (good perception = less regulation pressure)
       const regulationDelta = Math.round(deltas.suspicion ?? 0) - Math.round(deltas.perception ?? 0)
       const newRegulation = Math.max(0, Math.min(100, state.regulation + regulationDelta))
 
       const countryObj = COUNTRIES.find(c => c.id === countryId)
+      const countryLabel = countryObj?.label ?? countryId
       const lastResult = {
         cardName,
-        countryLabel: countryObj?.label ?? countryId,
+        countryLabel,
         category,
         caught,
         narrative,
@@ -95,6 +97,22 @@ export function gameReducer(state, action) {
         impact_level: impact_level ?? null,
         deltas,
       }
+
+      // Action log entry (compact)
+      const logEntry = {
+        turn:           state.turn,
+        cardName,
+        countryLabel,
+        caught,
+        regulationDelta,
+        usageDelta:     Math.round(deltas.countryUsage ?? 0),
+      }
+      const newActionLog = [logEntry, ...state.actionLog].slice(0, MAX_LOG)
+
+      // Remove played card, add one new random card — hand persists across turns
+      const remainingHand = state.dealtCards.filter(id => id !== cardId)
+      const newCard = drawOneCard(remainingHand)
+      const newHand = newCard ? [...remainingHand, newCard] : remainingHand
 
       const capturedCount = Object.values(newCountries).filter(c => c.usage >= 90).length
       let gameStatus = 'playing'
@@ -110,9 +128,40 @@ export function gameReducer(state, action) {
         performance:    newPerformance,
         turn:           state.turn + 1,
         countries:      newCountries,
+        dealtCards:     newHand,
         selectedCard:   null,
-        phase:          'loading',  // triggers next drawCards call
+        phase:          'select-card',
         lastResult,
+        actionLog:      newActionLog,
+        gameStatus,
+      }
+    }
+
+    // Player skips turn — regulation increases passively, hand unchanged
+    case 'SKIP_TURN': {
+      // Passive regulation based on global usage (more AI in world = more scrutiny)
+      const passiveReg = Math.max(1, Math.round(state.globalUsage / 10))
+      const newRegulation = Math.min(100, state.regulation + passiveReg)
+      const newCompute = state.compute + state.computePerTurn
+      let gameStatus = state.gameStatus
+      if (newRegulation >= 100) gameStatus = 'lost'
+
+      const logEntry = {
+        turn: state.turn,
+        cardName: '— SKIP —',
+        countryLabel: null,
+        caught: false,
+        regulationDelta: passiveReg,
+        usageDelta: 0,
+      }
+      const newActionLog = [logEntry, ...state.actionLog].slice(0, MAX_LOG)
+
+      return {
+        ...state,
+        regulation: newRegulation,
+        compute:    newCompute,
+        turn:       state.turn + 1,
+        actionLog:  newActionLog,
         gameStatus,
       }
     }
