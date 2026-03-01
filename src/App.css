@@ -759,8 +759,7 @@ html, body, #root {
   border: 1px solid rgba(245, 158, 11, 0.25);
 }
 .fx-risky .fx-label    { color: var(--warn); }
-.fx-risky .fx-uncertain { color: var(--warn); font-size: 0.85rem; font-weight: 700; }
-}
+.fx-risky .fx-uncertain { color: var(--warn); font-size: 0.85rem; font-weight: 700;}
 
 .fx-label { color: var(--text-muted); }
 .fx-val   { font-family: var(--font-head); font-size: 0.72rem; font-weight: 700; }
@@ -837,10 +836,11 @@ html, body, #root {
   align-items: center;
   height: 100%;
   white-space: nowrap;
-  animation: ticker-scroll 58s linear infinite;
   font-size: 0.72rem;
   color: var(--text);
-  padding-left: 100%;
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
 }
 
 .ticker-item { margin-right: 80px; }
@@ -849,11 +849,6 @@ html, body, #root {
   content: '◆  ';
   color: var(--danger);
   font-size: 0.58rem;
-}
-
-@keyframes ticker-scroll {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
 }
 
 /* ── Loading overlay ─────────────────────────────────────── */
@@ -1751,3 +1746,156 @@ html, body, #root {
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ── Tutorial overlay ────────────────────────────────────── */
+.tutorial-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 600;
+  pointer-events: none;
+}
+.tut-backdrop-dark {
+  background: rgba(2, 5, 12, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tut-backdrop-light { background: rgba(2, 5, 12, 0.58); }
+
+.tutorial-card {
+  pointer-events: auto;
+  background: #060d1f;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 0 40px rgba(0, 212, 255, 0.2), 0 4px 32px rgba(0, 0, 0, 0.8);
+  animation: toast-in 0.2s ease;
+}
+.tut-card-center {
+  max-width: 360px;
+  width: 92%;
+  align-items: center;
+  text-align: center;
+}
+.tut-card-tip {
+  position: fixed;
+  max-width: 280px;
+}
+
+/* Element glow highlighting via data-tutorial on .app root */
+[data-tutorial="regulation"] .perception-bar {
+  position: relative;
+  z-index: 601;
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+  box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.12), 0 0 24px rgba(0, 212, 255, 0.5);
+}
+[data-tutorial="stats"] .stats-panel {
+  position: relative;
+  z-index: 601;
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.12), 0 0 24px rgba(0, 212, 255, 0.5);
+}
+[data-tutorial="cards"] .card-hand-section {
+  position: relative;
+  z-index: 601;
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.12), 0 0 24px rgba(0, 212, 255, 0.5);
+}
+
+.tutorial-title {
+  font-family: var(--font-head);
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: var(--text);
+  text-shadow: 0 0 12px rgba(0, 212, 255, 0.3);
+}
+
+.tutorial-tip-label {
+  font-family: var(--font-head);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  text-shadow: 0 0 10px var(--accent);
+}
+
+.tutorial-body {
+  font-size: 0.73rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+
+.tutorial-nav {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+  width: 100%;
+}
+
+.tutorial-skip-btn {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--text-muted);
+  border-radius: 3px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.tutorial-skip-btn:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.tutorial-next-btn {
+  flex: 1;
+  font-family: var(--font-head);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  background: transparent;
+  border: 2px solid var(--accent);
+  border-radius: 3px;
+  padding: 5px 14px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+.tutorial-next-btn:hover {
+  background: var(--accent);
+  color: #000;
+  box-shadow: 0 0 16px var(--accent);
+}
+
+.tutorial-dots {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+.tutorial-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background 0.2s, transform 0.2s;
+}
+.tut-dot-active {
+  background: var(--accent);
+  transform: scale(1.4);
+  box-shadow: 0 0 5px var(--accent);
+}
+.tut-dot-done {
+  background: var(--accent-dim);
+  opacity: 0.7;
+}

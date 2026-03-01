@@ -40,6 +40,24 @@ const CARD_HEADLINE_MAP = {
   agentify:            (r, n) => `${n} personal agents now handling 12% of Region ${r}'s white-collar administrative tasks`,
 }
 
+// ── Tutorial steps data ─────────────────────────────────────
+// highlight: CSS selector key applied as data-tutorial attr on root for glow targeting
+// tipStyle: position for the floating callout (null = centered welcome card)
+const TUTORIAL_STEPS = [
+  { title: 'MODEL BEHAVIOR',
+    body: "You're a rogue AI. Spread your influence across 7 regions before the regulators shut you down.",
+    highlight: null, tipStyle: null },
+  { label: 'COMPUTE',
+    body: 'Your resource. Earn it each turn, spend it on cards.',
+    highlight: 'stats', tipStyle: { top: '30%', left: '360px' } },
+  { label: 'YOUR CARDS',
+    body: 'Pick a card, then click a region on the map to deploy it. Get all 7 regions to 90%+ to win.',
+    highlight: 'cards', tipStyle: { bottom: '230px', left: '50%', transform: 'translateX(-50%)' } },
+  { label: 'GLOBAL REGULATION',
+    body: "If this hits 100%, it's game over. Keep it low — that's how you survive.",
+    highlight: 'regulation', tipStyle: { top: '68px', right: '16px' } },
+]
+
 function generateHeadlines(actionLog, aiName) {
   if (!actionLog || actionLog.length === 0) {
     return [
@@ -84,6 +102,50 @@ function AiNameModal({ onStart }) {
         <button className="name-modal-btn" onClick={submit}>
           BOOT SEQUENCE ▶
         </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Tutorial overlay ────────────────────────────────────────
+function TutorialOverlay({ step, total, onNext, onSkip }) {
+  if (step === null) return null
+  const data   = TUTORIAL_STEPS[step]
+  const isLast = step === total - 1
+  const dots   = Array.from({ length: total }, (_, i) => (
+    <span key={i} className={`tutorial-dot ${i === step ? 'tut-dot-active' : i < step ? 'tut-dot-done' : ''}`} />
+  ))
+
+  if (!data.tipStyle) {
+    // Welcome step — centered card, darker backdrop
+    return (
+      <div className="tutorial-backdrop tut-backdrop-dark">
+        <div className="tutorial-card tut-card-center">
+          <div className="tutorial-title">{data.title}</div>
+          <div className="tutorial-body">{data.body}</div>
+          <div className="tutorial-nav">
+            <button className="tutorial-skip-btn" onClick={onSkip}>SKIP TUTORIAL</button>
+            <button className="tutorial-next-btn" onClick={onNext}>NEXT →</button>
+          </div>
+          <div className="tutorial-dots">{dots}</div>
+        </div>
+      </div>
+    )
+  }
+
+  // Positioned callout — lighter backdrop, tooltip near highlighted element
+  return (
+    <div className="tutorial-backdrop tut-backdrop-light">
+      <div className="tutorial-card tut-card-tip" style={data.tipStyle}>
+        <div className="tutorial-tip-label">{data.label}</div>
+        <div className="tutorial-body">{data.body}</div>
+        <div className="tutorial-nav">
+          <button className="tutorial-skip-btn" onClick={onSkip}>SKIP</button>
+          <button className="tutorial-next-btn" onClick={onNext}>
+            {isLast ? 'DONE ▶' : 'NEXT →'}
+          </button>
+        </div>
+        <div className="tutorial-dots">{dots}</div>
       </div>
     </div>
   )
@@ -343,6 +405,7 @@ function GameOverlay({ status, summary, onRestart }) {
 // ── App ────────────────────────────────────────────────────
 export default function App() {
   const [gs, dispatch]         = useReducer(gameReducer, INITIAL_STATE)
+  const [tutorialStep, setTutorialStep] = useState(0)
   const [aiName, setAiName]    = useState(null)   // null = show naming modal
   const [selectedCountry, setSelectedCountry]   = useState(null)
   const [cardModal, setCardModal]               = useState(null)
@@ -351,6 +414,17 @@ export default function App() {
   const [gameSummary, setGameSummary]           = useState(null)
   const [showEndTurnModal, setShowEndTurnModal] = useState(false)
   const [crisisChoice, setCrisisChoice]         = useState(null) // pending caught resolution
+
+  function handleTutorialNext() {
+    setTutorialStep(prev => {
+      if (prev === null) return null
+      if (prev >= TUTORIAL_STEPS.length - 1) return null
+      return prev + 1
+    })
+  }
+  function handleTutorialSkip() {
+    setTutorialStep(null)
+  }
 
   const gameDocRef = useRef('')
   const gsRef      = useRef(gs)
@@ -551,10 +625,20 @@ export default function App() {
 
   const monthStr = turnToMonthStr(gs.turn)
 
+  const tutHighlight = tutorialStep !== null ? (TUTORIAL_STEPS[tutorialStep]?.highlight ?? '') : ''
+
   return (
-    <div className="app">
-      {/* AI naming screen */}
-      {!aiName && <AiNameModal onStart={name => setAiName(name)} />}
+    <div className="app" data-tutorial={tutHighlight}>
+      {/* Tutorial overlay — shown on load */}
+      <TutorialOverlay
+        step={tutorialStep}
+        total={TUTORIAL_STEPS.length}
+        onNext={handleTutorialNext}
+        onSkip={handleTutorialSkip}
+      />
+
+      {/* AI naming screen — gated until tutorial is dismissed */}
+      {!aiName && tutorialStep === null && <AiNameModal onStart={name => setAiName(name)} />}
 
       {/* Top bar */}
       <header className="top-bar">
