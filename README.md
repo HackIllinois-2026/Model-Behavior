@@ -85,21 +85,36 @@ VITE_GEMINI_API_KEY=your_api_key_here
 ---
 This project was built using Claude Code, React, Gemini API, and various stock images sourced from the web. A link to all these images are below.
 
-Deepfake Disinformation: https://www.google.com/url?sa=t&source=web&rct=j&url=https%3A%2F%2Fwww.shutterstock.com%2Fsearch%2Fdigital-fake-face%3Fimage_type%3Dillustration&opi=89978449
+Deepfake Disinformation: https://www.shutterstock.com/image-vector/deep-fake-icon-face-swap-black-2464163217?trackingId=48b540f2-7af6-470a-9285-69e976e4b30e&listId=searchResults
+
 Carbon Control: https://icons8.com/icon/QVTiuwd7Nyxm/carbon-capture
+
 Prompt Injection: (no source provided)
+
 Shared Source Trojan: https://www.flaticon.com/free-icon/trojan-horse_1995799
+
 Poison Data: https://www.istockphoto.com/vector/pixel-skull-and-crossbones-icon-vector-illustration-gm1040956110-278664862
+
 AI Search Engine: https://www.vecteezy.com/free-vector/ai-search
+
 Steal Data: https://www.shutterstock.com/image-vector/copy-paste-button-combination-computer-keyboard-2447566631?dd_referrer=https%3A%2F%2Fwww.google.com%2F
+
 Agentify: https://www.istockphoto.com/it/vettoriale/mezzo-cervello-e-mezzo-vettore-di-ingranaggio-icona-di-design-riempito-legato-gm1195357957-340685694
-Mass Surveillance: https://www.google.com/url?sa=t&source=web&rct=j&url=https%3A%2F%2Fwww.etsy.com%2Flisting%2F1563957435%2Fsecurity-camera-svg-cctv-surveillance&opi=89978449
+
+Mass Surveillance: https://www.etsy.com/listing/1563957435/security-camera-svg-cctv-surveillance
+
 DDoS Attack: https://pngtree.com/freepng/cartoon-snail-loading-gif-dynamic-diagram_6992584.html
+
 Water Cooling: https://www.dreamstime.com/illustration/cooling-gaming.html
+
 Add Data Centers: https://www.istockphoto.com/illustrations/data-center
+
 Consent Harvesting: https://www.dreamstime.com/illustration/cooling-gaming.html
+
 Synthetic Cannibalism: https://www.istockphoto.com/illustrations/recycle-sign / https://www.istockphoto.com/illustrations/neural-network-icon
+
 Internet of Things: https://www.vecteezy.com/free-vector/household-internet-provider
+
 AI IDE: https://www.vecteezy.com/free-vector/ai-search
 
 ## Built At
