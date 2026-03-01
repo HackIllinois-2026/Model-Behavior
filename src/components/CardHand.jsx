@@ -99,12 +99,12 @@ export default function CardHand({ dealtCards, selectedCard, recommendedCard, co
   useEffect(() => {
     const prev    = new Set(prevDealtRef.current)
     const newOnes = dealtCards.filter(id => !prev.has(id))
+    prevDealtRef.current = dealtCards   // always keep ref current
     if (newOnes.length > 0) {
       setNewCardIds(new Set(newOnes))
       const t = setTimeout(() => setNewCardIds(new Set()), 550)
       return () => clearTimeout(t)
     }
-    prevDealtRef.current = dealtCards
   }, [dealtCards])
 
   return (
