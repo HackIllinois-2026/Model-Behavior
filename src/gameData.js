@@ -2,12 +2,12 @@
 // 7 numbered regions on the alien planet map
 export const COUNTRIES = [
   { id: 'c1', label: '1', x: 14, y: 30 },
-  { id: 'c2', label: '2', x: 11, y: 62 },
-  { id: 'c3', label: '3', x: 35, y: 20 },
-  { id: 'c4', label: '4', x: 50, y: 42 },
-  { id: 'c5', label: '5', x: 72, y: 18 },
-  { id: 'c6', label: '6', x: 84, y: 47 },
-  { id: 'c7', label: '7', x: 60, y: 70 },
+  { id: 'c2', label: '2', x: 12, y: 80 },
+  { id: 'c3', label: '3', x: 55, y: 18 },
+  { id: 'c4', label: '4', x: 40, y: 50 },
+  { id: 'c5', label: '5', x: 86, y: 28 },
+  { id: 'c6', label: '6', x: 84, y: 70 },
+  { id: 'c7', label: '7', x: 67, y: 72 },
 ]
 
 // ── Card categories ────────────────────────────────────────
