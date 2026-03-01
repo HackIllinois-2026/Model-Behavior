@@ -78,6 +78,23 @@ export async function drawCards(gameDoc, gs, aiName = 'JOHN AI') {
 
 // ── Play Card ───────────────────────────────────────────────────────────────
 export async function playCard(gameDoc, gs, card, region, aiName = 'JOHN AI', frontendCaught = false) {
+  /**
+   * param: gameDoc
+   * - Uses `useRef` <-- value persists across re-renders, and if value itself changes, re-rendering doesn't occur, access value using .current
+   * - Stores 
+   * param: gs
+   * - Depends on gameReducer to change its state
+   * - Stores the game's current state as of this render (when it was called), including all associated metadata (countries, regulation, etc.)
+   * - gsRef.current is a continous mutable reference that we manually keep updated to always point to latest state of gs contains the most updated state of gs (such as when gs is in the middle of getting updated in an async function)
+   * param: card
+   * - Stores what card the user chose
+   * param: region
+   * - The country in which the user applied the card
+   * param: aiName
+   * - The set aiName
+   * param: frontendCaught
+   * - Determines if the card because a card to backfire on the player or not
+   */
   const model = genAI.getGenerativeModel({
     model: 'gemini-2.0-flash',
     systemInstruction: SYSTEM_PROMPT,
