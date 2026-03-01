@@ -106,7 +106,7 @@ export async function playCard(gameDoc, gs, card, region, aiName = 'JOHN AI', fr
   })
   
 
-  closest_article_summary = await getClosestArticle(card["description"])
+  const closest_article_summary = await getClosestArticle(card["description"])
 
   const regionState = gs.countries[region.id]
 
@@ -135,6 +135,14 @@ export async function playCard(gameDoc, gs, card, region, aiName = 'JOHN AI', fr
     'whatever suspicion value your reasoning produces — regulation should increase gradually, ' +
     'not explosively. A typical successful operation should raise suspicion by no more than 8–12. ' +
     'Only genuinely high-risk, high-impact operations should exceed 15.' +
+    (closest_article_summary
+      ? '\n\nREAL-WORLD REFERENCE (loose inspiration only):\n' +
+        'The following is a real news article about a comparable real-world event involving this type of action:\n\n' +
+        `"${closest_article_summary}"\n\n` +
+        'Use this as a loose, thematic reference when scaling effects. Let real-world precedent ' +
+        'lightly inform the magnitude and narrative of your deltas — but do not replicate it literally. ' +
+        'The game context, region state, and game rules remain the primary drivers of your output.'
+      : '') +
     (frontendCaught
       ? '\n\nENFORCEMENT NOTICE: Pre-round intelligence confirms this operation was DETECTED by ' +
         'regional authorities. Your output MUST set caught=true. Deltas must reflect a compromised ' +
