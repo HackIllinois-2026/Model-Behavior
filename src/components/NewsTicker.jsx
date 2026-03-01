@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useLayoutEffect } from 'react'
 
 const SPEED_PX_PER_SEC = 50
 
@@ -16,12 +16,12 @@ export default function NewsTicker({ headlines }) {
       if (lastTimeRef.current !== null) {
         // Cap dt so a hidden tab resuming doesn't cause a large jump
         const dt = Math.min((now - lastTimeRef.current) / 1000, 0.05)
-        posRef.current += SPEED_PX_PER_SEC * dt
         const halfWidth = el.scrollWidth / 2
-        if (halfWidth > 0 && posRef.current >= halfWidth) {
-          posRef.current -= halfWidth
+        if (halfWidth > 0) {
+          // Use modulo so position is always valid regardless of content width changes
+          posRef.current = (posRef.current + SPEED_PX_PER_SEC * dt) % halfWidth
+          el.style.transform = `translate3d(${-posRef.current}px, 0, 0)`
         }
-        el.style.transform = `translate3d(${-posRef.current}px, 0, 0)`
       }
       lastTimeRef.current = now
       frameRef.current = requestAnimationFrame(tick)
@@ -32,6 +32,14 @@ export default function NewsTicker({ headlines }) {
       if (frameRef.current) cancelAnimationFrame(frameRef.current)
     }
   }, []) // runs once — position persists across content updates
+
+  // When content changes, clamp position to new half-width so it doesn't jump
+  useLayoutEffect(() => {
+    const el = contentRef.current
+    if (!el) return
+    const half = el.scrollWidth / 2
+    if (half > 0) posRef.current = posRef.current % half
+  }, [headlines])
 
   const items = [...headlines, ...headlines]
 
