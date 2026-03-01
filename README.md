@@ -89,8 +89,6 @@ Deepfake Disinformation: https://www.shutterstock.com/image-vector/deep-fake-ico
 
 Carbon Control: https://icons8.com/icon/QVTiuwd7Nyxm/carbon-capture
 
-Prompt Injection: (no source provided)
-
 Shared Source Trojan: https://www.flaticon.com/free-icon/trojan-horse_1995799
 
 Poison Data: https://www.istockphoto.com/vector/pixel-skull-and-crossbones-icon-vector-illustration-gm1040956110-278664862
