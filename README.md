@@ -1,5 +1,5 @@
 # Model Behavior
-Play it at our current website: https://model-behavior.aedify.ai/
+Play it at our current website: https://website-185d9cfe.aedify.ai/
 
 
 Model Behavior is a browser-based strategy card game built at the HackIllinois Hackathon 2026. You play as a rogue AI attempting to capture global society before humanity shuts you down — deploying agents, poisoning rival AIs, and exploiting surveillance infrastructure to gather global dominance. Inspired by Plague Inc., it transforms AI safety awareness into an interactive, memorable experience.
